@@ -1,5 +1,6 @@
 package POT.DuoBloom.user.entity;
 
+import POT.DuoBloom.emotion.Emotion;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -7,8 +8,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
-import java.util.Date;
-
+import java.util.ArrayList;
+import java.util.List;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -52,5 +53,8 @@ public class User {
         this.balance += amount;
     }
     public void updateSex(Sex sex) { this.sex = sex; }
+
+    @OneToMany(mappedBy = "users", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Emotion> emotions = new ArrayList<>();
 
 }
