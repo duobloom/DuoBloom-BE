@@ -1,6 +1,6 @@
 package POT.DuoBloom.emotion.service;
 
-import POT.DuoBloom.emotion.Emotion;
+import POT.DuoBloom.emotion.entity.Emotion;
 import POT.DuoBloom.emotion.EmotionRepository;
 import POT.DuoBloom.emotion.dto.EmotionResponseDto;
 import POT.DuoBloom.emotion.dto.EmotionUpdateDto;

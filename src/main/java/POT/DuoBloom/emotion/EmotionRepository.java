@@ -1,5 +1,6 @@
 package POT.DuoBloom.emotion;
 
+import POT.DuoBloom.emotion.entity.Emotion;
 import POT.DuoBloom.user.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
