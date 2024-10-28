@@ -1,6 +1,6 @@
 package POT.DuoBloom.user.entity;
 
-import POT.DuoBloom.emotion.Emotion;
+import POT.DuoBloom.emotion.entity.Emotion;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -40,6 +40,11 @@ public class User {
 
     private Integer balance;
 
+    @OneToOne
+    @JoinColumn(name = "couple_user_id")
+    private User coupleUser;
+
+    public void updateUserId(Long userId) { this.userId = userId; } // 테스트용
     public void updateNickName(String nickname) { this.nickname = nickname; }
     public void updateEmail(String email) { this.email = email; }
     public void updatePassword(String password) { this.password = password; }
@@ -56,5 +61,7 @@ public class User {
 
     @OneToMany(mappedBy = "users", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Emotion> emotions = new ArrayList<>();
+
+    public void setCoupleUser(User coupleUser) { this.coupleUser = coupleUser; }
 
 }

@@ -1,4 +1,4 @@
-package POT.DuoBloom.emotion;
+package POT.DuoBloom.emotion.entity;
 
 import POT.DuoBloom.user.entity.User;
 import jakarta.persistence.*;
@@ -57,8 +57,6 @@ public class Emotion {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User users;
-
-
 
 
 }
