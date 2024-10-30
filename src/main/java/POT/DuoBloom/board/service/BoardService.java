@@ -1,24 +1,31 @@
 package POT.DuoBloom.board.service;
 
+import POT.DuoBloom.board.dto.BoardCommentDto;
+import POT.DuoBloom.board.dto.BoardResponseDto;
 import POT.DuoBloom.board.entity.Board;
+import POT.DuoBloom.board.entity.BoardComment;
 import POT.DuoBloom.board.entity.BoardLike;
+import POT.DuoBloom.board.repository.BoardCommentRepository;
 import POT.DuoBloom.board.repository.BoardRepository;
-import POT.DuoBloom.board.repository.LikeRepository;
+import POT.DuoBloom.board.repository.BoardLikeRepository;
 import POT.DuoBloom.user.entity.User;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
+import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class BoardService {
 
     private final BoardRepository boardRepository;
-    private final LikeRepository likeRepository;
+    private final BoardLikeRepository likeRepository;
+    private final BoardCommentRepository boardCommentRepository;
 
     // 커플이 연결된 경우에만 접근 가능
     public boolean canAccessBoard(User user) {
@@ -36,15 +43,30 @@ public class BoardService {
     }
 
     // 전체 글 조회
-    @Transactional
+    @Transactional(readOnly = true)
     public List<Board> getAllBoards() {
         return boardRepository.findAll();
     }
 
-    // 단일 글 조회
-    @Transactional
-    public Optional<Board> getBoardById(Integer boardId) {
-        return boardRepository.findById(boardId);
+    // 게시글 상세 조회 메서드 (댓글 포함)
+    @Transactional(readOnly = true)
+    public BoardResponseDto getBoardDetailsById(Integer boardId) {
+        Board board = boardRepository.findById(boardId)
+                .orElseThrow(() -> new IllegalStateException("해당 글이 존재하지 않습니다."));
+
+        List<BoardComment> comments = boardCommentRepository.findByBoard_BoardId(boardId);
+        List<BoardCommentDto> commentDtos = comments.stream()
+                .map(comment -> new BoardCommentDto(comment.getId(), comment.getUser().getNickname(),
+                        comment.getContent(), comment.getCreatedAt()))
+                .collect(Collectors.toList());
+
+        return new BoardResponseDto(
+                board.getBoardId(),
+                board.getTitle(),
+                board.getContent(),
+                board.getUpdatedAt(),
+                commentDtos
+        );
     }
 
     // 글 수정
@@ -54,16 +76,13 @@ public class BoardService {
             throw new IllegalStateException("커플인 경우에만 커뮤니티 글을 수정할 수 있습니다.");
         }
 
-        // 기존 게시물을 찾아 업데이트
         Board board = boardRepository.findById(boardId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 글이 존재하지 않습니다."));
 
-        // 작성자 확인
         if (!board.getUser().equals(user)) {
             throw new IllegalStateException("해당 글의 작성자만 수정할 수 있습니다.");
         }
 
-        // 게시물 내용 업데이트
         board = new Board(user, title, content, LocalDateTime.now());
         return boardRepository.save(board);
     }
@@ -75,11 +94,9 @@ public class BoardService {
             throw new IllegalStateException("커플인 경우에만 커뮤니티 글을 삭제할 수 있습니다.");
         }
 
-        // 삭제할 게시물 찾기
         Board board = boardRepository.findById(boardId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 글이 존재하지 않습니다."));
 
-        // 작성자 확인
         if (!board.getUser().equals(user)) {
             throw new IllegalStateException("해당 글의 작성자만 삭제할 수 있습니다.");
         }
@@ -87,7 +104,7 @@ public class BoardService {
         boardRepository.delete(board);
     }
 
-    // 좋아요
+    // 좋아요 추가
     @Transactional
     public void likeBoard(User user, Integer boardId) {
         Board board = boardRepository.findById(boardId)
@@ -113,5 +130,20 @@ public class BoardService {
         likeRepository.deleteByUserAndBoard(user, board);
     }
 
+    // 댓글 추가
+    @Transactional
+    public BoardComment addComment(User user, Integer boardId, String content) {
+        Board board = boardRepository.findById(boardId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 게시글이 존재하지 않습니다."));
+        BoardComment boardComment = new BoardComment(user, board, content);
+        return boardCommentRepository.save(boardComment);
+    }
 
+    // 댓글 삭제
+    @Transactional
+    public void deleteComment(Long commentId) {
+        BoardComment boardComment = boardCommentRepository.findById(commentId)
+                .orElseThrow(() -> new IllegalArgumentException("댓글이 존재하지 않습니다."));
+        boardCommentRepository.delete(boardComment);
+    }
 }
