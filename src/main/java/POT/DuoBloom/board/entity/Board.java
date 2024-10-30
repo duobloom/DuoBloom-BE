@@ -19,7 +19,7 @@ import java.util.List;
 public class Board {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer BoardId;
+    private Integer boardId;
 
     private String title;
 
