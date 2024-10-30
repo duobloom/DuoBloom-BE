@@ -37,7 +37,6 @@ public class Emotion {
         this.content = content;
     }
 
-
     public void updateEmoji(Emoji emoji) {
         this.emoji = emoji;
     }

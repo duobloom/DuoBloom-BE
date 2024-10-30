@@ -9,7 +9,9 @@ import POT.DuoBloom.user.service.UserService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -100,4 +102,32 @@ public class BoardController {
         boardService.deleteBoard(user, boardId);
         return ResponseEntity.noContent().build();
     }
+
+    // 좋아요 추가
+    @PostMapping("/{boardId}")
+    public ResponseEntity<Void> likeBoard(@PathVariable Integer boardId, HttpSession session) {
+        Long userId = (Long) session.getAttribute("userId");
+        if (userId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        User user = userService.findById(userId);
+        boardService.likeBoard(user, boardId);
+        return ResponseEntity.ok().build();
+    }
+
+    // 좋아요 취소
+    @PatchMapping("/{boardId}")
+    public ResponseEntity<Void> unlikeBoard(@PathVariable Integer boardId, HttpSession session) {
+        Long userId = (Long) session.getAttribute("userId");
+        if (userId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        User user = userService.findById(userId);
+        boardService.unlikeBoard(user, boardId);
+        return ResponseEntity.ok().build();
+    }
+
+
 }
