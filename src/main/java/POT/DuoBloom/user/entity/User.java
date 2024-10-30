@@ -71,8 +71,6 @@ public class User {
     private List<Board> boards = new ArrayList<>();
 
 
-
-
     public void setCoupleUser(User coupleUser) { this.coupleUser = coupleUser; }
 
 
