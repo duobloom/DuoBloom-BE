@@ -1,5 +1,7 @@
 package POT.DuoBloom.user.entity;
 
+import POT.DuoBloom.board.entity.Board;
+import POT.DuoBloom.board.entity.BoardLike;
 import POT.DuoBloom.emotion.entity.Emotion;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -36,7 +38,7 @@ public class User {
     private Sex sex;
 
     @Column(nullable = false)
-    private LocalDate birth;
+    private LocalDate birth; // String 으로 수정 8자리로
 
     private Integer balance;
 
@@ -62,6 +64,17 @@ public class User {
     @OneToMany(mappedBy = "users", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Emotion> emotions = new ArrayList<>();
 
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<BoardLike> boardLikes = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Board> boards = new ArrayList<>();
+
+
+
+
     public void setCoupleUser(User coupleUser) { this.coupleUser = coupleUser; }
+
+
 
 }

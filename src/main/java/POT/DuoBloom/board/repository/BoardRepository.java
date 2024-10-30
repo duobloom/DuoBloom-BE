@@ -1,4 +1,4 @@
-package POT.DuoBloom.board;
+package POT.DuoBloom.board.repository;
 
 import POT.DuoBloom.board.entity.Board;
 import org.springframework.data.jpa.repository.JpaRepository;

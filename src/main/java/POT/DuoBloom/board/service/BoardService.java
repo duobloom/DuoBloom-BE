@@ -1,7 +1,9 @@
 package POT.DuoBloom.board.service;
 
 import POT.DuoBloom.board.entity.Board;
-import POT.DuoBloom.board.BoardRepository;
+import POT.DuoBloom.board.entity.BoardLike;
+import POT.DuoBloom.board.repository.BoardRepository;
+import POT.DuoBloom.board.repository.LikeRepository;
 import POT.DuoBloom.user.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -16,6 +18,7 @@ import java.util.Optional;
 public class BoardService {
 
     private final BoardRepository boardRepository;
+    private final LikeRepository likeRepository;
 
     // 커플이 연결된 경우에만 접근 가능
     public boolean canAccessBoard(User user) {
@@ -83,4 +86,32 @@ public class BoardService {
 
         boardRepository.delete(board);
     }
+
+    // 좋아요
+    @Transactional
+    public void likeBoard(User user, Integer boardId) {
+        Board board = boardRepository.findById(boardId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 글이 존재하지 않습니다."));
+
+        if (likeRepository.existsByUserAndBoard(user, board)) {
+            throw new IllegalStateException("이미 좋아요를 누른 게시물입니다.");
+        }
+
+        likeRepository.save(new BoardLike(user, board));
+    }
+
+    // 좋아요 취소
+    @Transactional
+    public void unlikeBoard(User user, Integer boardId) {
+        Board board = boardRepository.findById(boardId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 글이 존재하지 않습니다."));
+
+        if (!likeRepository.existsByUserAndBoard(user, board)) {
+            throw new IllegalStateException("좋아요를 누르지 않은 게시물입니다.");
+        }
+
+        likeRepository.deleteByUserAndBoard(user, board);
+    }
+
+
 }
