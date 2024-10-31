@@ -1,5 +1,4 @@
 FROM bellsoft/liberica-openjdk-alpine:17
-ARG JAR_FILE=build/libs/*.jar
+ARG JAR_FILE=DuoBloom/build/libs/DuoBloom-0.0.1-SNAPSHOT.jar
 COPY ${JAR_FILE} app.jar
-# 도커 컨테이너를 시작할 때 실행할 명령어
-ENTRYPOINT ["java","-jar","/app.jar"]
+ENTRYPOINT ["java", "-jar", "/app.jar"]
