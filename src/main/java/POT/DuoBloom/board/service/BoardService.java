@@ -14,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -146,4 +147,19 @@ public class BoardService {
                 .orElseThrow(() -> new IllegalArgumentException("댓글이 존재하지 않습니다."));
         boardCommentRepository.delete(boardComment);
     }
+
+    @Transactional(readOnly = true)
+    public List<BoardResponseDto> getBoardsByDateAndUser(LocalDate date, User user) {
+        List<Board> boards = boardRepository.findByUserAndDate(user, date);
+        return boards.stream()
+                .map(board -> new BoardResponseDto(
+                        board.getBoardId(),
+                        board.getTitle(),
+                        board.getContent(),
+                        board.getUpdatedAt(),
+                        null // 댓글은 제외
+                ))
+                .collect(Collectors.toList());
+    }
+
 }

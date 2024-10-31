@@ -7,6 +7,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -25,6 +26,9 @@ public class Board {
 
     private String content;
 
+    @Column(nullable = false)
+    private LocalDate date = LocalDate.now();
+
     private LocalDateTime updatedAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -35,7 +39,8 @@ public class Board {
         this.user = user;
         this.title = title;
         this.content = content;
-        this.updatedAt = updatedAt;
+        this.updatedAt = updatedAt != null ? updatedAt : LocalDateTime.now();
+        this.date = this.updatedAt.toLocalDate();
     }
 
     @OneToMany(mappedBy = "board", cascade = CascadeType.ALL, orphanRemoval = true)

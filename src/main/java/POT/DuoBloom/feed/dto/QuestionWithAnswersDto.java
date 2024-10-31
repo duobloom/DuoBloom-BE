@@ -2,14 +2,14 @@ package POT.DuoBloom.feed.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @AllArgsConstructor
-public class AnswerDto {
-    private Long answerId;
-    private Long userId;
+public class QuestionWithAnswersDto {
     private Long questionId;
     private String content;
-    private LocalDateTime createdAt;
+    private String myAnswerStatus;
+    private String coupleAnswerStatus;
+    private List<AnswerDto> answers;
 }
