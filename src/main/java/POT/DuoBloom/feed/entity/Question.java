@@ -14,6 +14,9 @@ import java.util.List;
 public class Question {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long questionId;
+
     @Column(nullable = false)
     private LocalDateTime date;
 
@@ -28,3 +31,5 @@ public class Question {
         this.content = content;
     }
 }
+
+

@@ -22,7 +22,7 @@ public class PointTransaction {
     @Column(nullable = false)
     private Integer amount;
 
-    @Column(nullable = false)
+    @Column(name = "transaction_type")
     @Enumerated(EnumType.STRING)
     private TransactionType transactionType;
 

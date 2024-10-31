@@ -4,19 +4,22 @@ import POT.DuoBloom.feed.dto.AnswerDto;
 import POT.DuoBloom.feed.entity.Answer;
 import POT.DuoBloom.feed.entity.Question;
 import POT.DuoBloom.user.entity.User;
+import org.springframework.stereotype.Component;
 
+@Component
 public class AnswerMapper {
 
-    public static AnswerDto toDto(Answer answer) {
+    // toDto와 toEntity 메서드를 인스턴스 메서드로 변경
+    public AnswerDto toDto(Answer answer) {
         return new AnswerDto(
                 answer.getAnswerId(),
                 answer.getUser().getUserId(),
-                answer.getQuestion().getDate(),
+                answer.getQuestion().getQuestionId(),
                 answer.getContent()
         );
     }
 
-    public static Answer toEntity(AnswerDto answerDto, User user, Question question) {
+    public Answer toEntity(AnswerDto answerDto, User user, Question question) {
         return new Answer(user, question, answerDto.getContent());
     }
 }

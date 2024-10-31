@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 public class AnswerDto {
     private Long answerId;
     private Long userId;
-    private LocalDateTime date;
+    private Long questionId;
     private String content;
 }
+
