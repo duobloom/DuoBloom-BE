@@ -3,6 +3,9 @@ package POT.DuoBloom.feed.controller;
 import POT.DuoBloom.feed.dto.AnswerDto;
 import POT.DuoBloom.feed.dto.QuestionDto;
 import POT.DuoBloom.feed.service.FeedQuestionService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,7 +25,11 @@ public class FeedQuestionController {
 
     private final FeedQuestionService feedQuestionService;
 
-    // 날짜별 공통 질문 조회 - 커플의 응답 상태와 답변 포함
+    @Operation(summary = "날짜별 공통 질문 조회", description = "지정된 날짜의 공통 질문을 커플의 응답 상태와 함께 조회합니다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "공통 질문 조회 성공"),
+            @ApiResponse(responseCode = "401", description = "로그인이 필요합니다.")
+    })
     @GetMapping("/questions/{date}")
     public ResponseEntity<List<QuestionDto>> getQuestionsByDateWithCoupleAnswers(
             @PathVariable LocalDate date, HttpSession session) {
@@ -33,7 +40,11 @@ public class FeedQuestionController {
         return ResponseEntity.ok(feedQuestionService.getQuestionsWithAnswerStatus(date, userId));
     }
 
-    // 공통 질문 답변 작성 - 질문별로 답변
+    @Operation(summary = "공통 질문 답변 작성", description = "지정된 질문에 대한 답변을 작성합니다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "답변 작성 성공"),
+            @ApiResponse(responseCode = "401", description = "로그인이 필요합니다.")
+    })
     @PostMapping("/answer")
     public ResponseEntity<Void> postAnswer(@RequestBody AnswerDto answerDto, HttpSession session) {
         Long userId = (Long) session.getAttribute("userId");
@@ -44,7 +55,12 @@ public class FeedQuestionController {
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
-    // 공통 질문 답변 수정
+    @Operation(summary = "공통 질문 답변 수정", description = "지정된 답변을 수정합니다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "답변 수정 성공"),
+            @ApiResponse(responseCode = "401", description = "로그인이 필요합니다."),
+            @ApiResponse(responseCode = "404", description = "해당 답변을 찾을 수 없습니다.")
+    })
     @PatchMapping("/answers/{answerId}")
     public ResponseEntity<Void> updateAnswer(
             @PathVariable Long answerId,
@@ -57,5 +73,4 @@ public class FeedQuestionController {
         feedQuestionService.updateAnswer(answerId, answerDto, userId);
         return ResponseEntity.ok().build();
     }
-
 }

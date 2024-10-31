@@ -5,6 +5,9 @@ import POT.DuoBloom.emotion.dto.EmotionUpdateDto;
 import POT.DuoBloom.emotion.service.EmotionService;
 import POT.DuoBloom.user.entity.User;
 import POT.DuoBloom.user.service.UserService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,7 +26,12 @@ public class EmotionController {
     private final EmotionService emotionService;
     private final UserService userService;
 
-    // 날짜별 감정 조회
+    @Operation(summary = "날짜별 감정 조회", description = "지정한 날짜의 감정을 조회합니다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "감정 조회 성공"),
+            @ApiResponse(responseCode = "401", description = "로그인이 필요합니다."),
+            @ApiResponse(responseCode = "404", description = "지정한 날짜의 감정이 존재하지 않습니다.")
+    })
     @GetMapping("/{date}")
     public ResponseEntity<EmotionResponseDto> getEmotionByDate(@PathVariable String date, HttpSession session) {
         Long userId = (Long) session.getAttribute("userId");
@@ -40,7 +48,12 @@ public class EmotionController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    // 감정 생성
+    @Operation(summary = "감정 생성", description = "오늘 날짜의 감정을 생성합니다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "감정 생성 성공"),
+            @ApiResponse(responseCode = "401", description = "로그인이 필요합니다."),
+            @ApiResponse(responseCode = "409", description = "이미 해당 날짜에 감정이 존재합니다.")
+    })
     @PostMapping
     public ResponseEntity<Void> createEmotion(@RequestBody EmotionUpdateDto emotionUpdateDto, HttpSession session) {
         Long userId = (Long) session.getAttribute("userId");
@@ -61,7 +74,11 @@ public class EmotionController {
         return ResponseEntity.status(201).build();
     }
 
-    // 감정 수정
+    @Operation(summary = "감정 수정", description = "감정의 내용을 수정합니다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "감정 수정 성공"),
+            @ApiResponse(responseCode = "404", description = "지정한 감정을 찾을 수 없습니다.")
+    })
     @PatchMapping("/{emotionId}")
     public ResponseEntity<Void> updateEmotion(@PathVariable Long emotionId, @RequestBody EmotionUpdateDto emotionUpdateDto) {
         emotionService.updateEmotion(emotionId, emotionUpdateDto);
