@@ -34,9 +34,10 @@ public class EmailService {
         try {
             message.setFrom(senderEmail);
             message.setRecipients(MimeMessage.RecipientType.TO, recipientEmail);
-            message.setSubject("[Osori] 회원가입을 위한 이메일 인증");
+            message.setSubject("[DuoBloom] 회원가입을 위한 이메일 인증");
 
             // 이메일 본문
+            // TODO: 디자인 맞추어 색 변경
             String body = "<h1 style='color:#2c2f33;'>안녕하세요, DuoBloom입니다.</h1>"
                     + "<h3 style='color:#99aab5;'>회원가입을 위해 요청하신 인증 번호입니다.</h3>"
                     + "<div align='center' style='border:1px solid #2c2f33; font-family:verdana;'>"
