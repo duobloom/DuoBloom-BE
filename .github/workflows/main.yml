@@ -12,17 +12,6 @@ jobs:
     permissions:
       contents: read
 
-    env:
-      DB_URL: ${{ secrets.DB_URL }}
-      DB_USERNAME: ${{ secrets.DB_USERNAME }}
-      DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-      REDIS_HOST: ${{ secrets.REDIS_HOST }}
-      REDIS_PORT: ${{ secrets.REDIS_PORT }}
-      SMTP_HOST: ${{ secrets.SMTP_HOST }}
-      SMTP_PORT: ${{ secrets.SMTP_PORT }}
-      SMTP_USERNAME: ${{ secrets.SMTP_USERNAME }}
-      SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
-
     steps:
     - uses: actions/checkout@v4
 
@@ -68,17 +57,9 @@ jobs:
             sudo docker stop $CONTAINER_ID && sudo docker rm $CONTAINER_ID
           fi
 
-          # 새 컨테이너 실행 및 GitHub Secrets 환경 변수 전달
+          # 새 컨테이너 실행 및 .env 파일 참조
           sudo docker run -d --log-driver=syslog --name docker-test -p 8080:8080 \
-            -e DB_URL=${{ secrets.DB_URL }} \
-            -e DB_USERNAME=${{ secrets.DB_USERNAME }} \
-            -e DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
-            -e REDIS_HOST=${{ secrets.REDIS_HOST }} \
-            -e REDIS_PORT=${{ secrets.REDIS_PORT }} \
-            -e SMTP_HOST=${{ secrets.SMTP_HOST }} \
-            -e SMTP_PORT=${{ secrets.SMTP_PORT }} \
-            -e SMTP_USERNAME=${{ secrets.SMTP_USERNAME }} \
-            -e SMTP_PASSWORD=${{ secrets.SMTP_PASSWORD }} \
+            --env-file ~/.env \
             ${{ secrets.DOCKER_USERNAME }}/docker-test:latest
 
           # 실행 중인 컨테이너 확인
