@@ -3,6 +3,9 @@ package POT.DuoBloom.user;
 import POT.DuoBloom.user.dto.*;
 import POT.DuoBloom.user.service.EmailService;
 import POT.DuoBloom.user.service.UserService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,11 +24,14 @@ public class UserController {
     private final UserService userService;
     private final EmailService emailService;
 
-
-    // 이메일 인증 코드 전송
+    @Operation(summary = "이메일 인증 코드 전송", description = "회원가입을 위해 이메일 인증 코드를 전송합니다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "인증 코드가 이메일로 전송되었습니다."),
+            @ApiResponse(responseCode = "400", description = "이메일이 올바르지 않습니다.")
+    })
     @PostMapping("/signup/send-email")
-    public ResponseEntity<String> sendSignupEmail(@RequestBody Map<String,String> request) {
-        String email = request.get("email"); // 이메일 주소 추출
+    public ResponseEntity<String> sendSignupEmail(@RequestBody Map<String, String> request) {
+        String email = request.get("email");
         if (email == null || email.isEmpty()) {
             return ResponseEntity.status(400).body("이메일이 올바르지 않습니다.");
         }
@@ -33,15 +39,18 @@ public class UserController {
         return ResponseEntity.ok("인증 코드가 이메일로 전송되었습니다.");
     }
 
-    // 회원가입
+    @Operation(summary = "회원가입", description = "이메일 인증 후 회원가입을 진행합니다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "회원가입이 완료되었습니다."),
+            @ApiResponse(responseCode = "400", description = "이메일 인증이 완료되지 않았습니다."),
+            @ApiResponse(responseCode = "500", description = "서버 에러 발생")
+    })
     @PostMapping("/signup")
     public ResponseEntity<String> signup(@RequestBody SignupUserDto signupUserDto) {
         try {
-            // 이메일 인증이 완료된 사용자만 회원가입 가능
             if (!emailService.verifyAuthCode(signupUserDto.getEmail(), signupUserDto.getAuthCode())) {
                 return ResponseEntity.status(400).body("이메일 인증이 완료되지 않았습니다.");
             }
-
             userService.signup(signupUserDto);
             return ResponseEntity.ok("회원가입이 완료되었습니다.");
         } catch (IllegalArgumentException e) {
@@ -51,11 +60,14 @@ public class UserController {
         }
     }
 
-    // 유저 프로필 정보 조회
+    @Operation(summary = "유저 프로필 정보 조회", description = "로그인한 유저의 프로필 정보를 조회합니다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "프로필 정보가 성공적으로 조회되었습니다."),
+            @ApiResponse(responseCode = "401", description = "로그인이 필요합니다.")
+    })
     @GetMapping("/profile")
     public ResponseEntity<UserProfileDto> getUserProfile(HttpSession session) {
         Long userId = (Long) session.getAttribute("userId");
-
         if (userId == null) {
             return ResponseEntity.status(401).build();
         }
@@ -63,7 +75,11 @@ public class UserController {
         return ResponseEntity.ok(userDto);
     }
 
-    // 로그인
+    @Operation(summary = "로그인", description = "유저가 이메일과 비밀번호로 로그인합니다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "로그인 성공"),
+            @ApiResponse(responseCode = "401", description = "로그인 실패")
+    })
     @PostMapping("/login")
     public ResponseEntity<String> login(@RequestBody LoginRequestDto loginRequest, HttpSession session) {
         try {
@@ -80,18 +96,25 @@ public class UserController {
         }
     }
 
-    // 로그아웃 시 세션 무효화
+    @Operation(summary = "로그아웃", description = "세션을 무효화하여 로그아웃합니다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "로그아웃 성공")
+    })
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(HttpSession session) {
         session.invalidate();
         return ResponseEntity.ok().build();
     }
 
-    // 유저 프로필 수정
+    @Operation(summary = "유저 프로필 수정", description = "로그인한 유저의 프로필을 수정합니다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "프로필 수정이 완료되었습니다."),
+            @ApiResponse(responseCode = "401", description = "로그인이 필요합니다."),
+            @ApiResponse(responseCode = "400", description = "잘못된 요청")
+    })
     @PatchMapping("/profile")
     public ResponseEntity<String> updateUserProfile(@RequestBody UserProfileEditDto userProfileEditDto, HttpSession session) {
         Long userId = (Long) session.getAttribute("userId");
-
         if (userId == null) {
             return ResponseEntity.status(401).body("로그인이 필요합니다.");
         }
@@ -107,11 +130,15 @@ public class UserController {
         }
     }
 
-    // 비밀번호 변경
+    @Operation(summary = "비밀번호 변경", description = "현재 비밀번호를 확인하고 새로운 비밀번호로 변경합니다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "비밀번호가 성공적으로 변경되었습니다."),
+            @ApiResponse(responseCode = "401", description = "로그인이 필요합니다."),
+            @ApiResponse(responseCode = "400", description = "비밀번호가 올바르지 않습니다.")
+    })
     @PatchMapping("/password")
     public ResponseEntity<String> updatePassword(@RequestBody Map<String, String> request, HttpSession session) {
         Long userId = (Long) session.getAttribute("userId");
-
         if (userId == null) {
             return ResponseEntity.status(401).body("로그인이 필요합니다.");
         }
@@ -124,13 +151,10 @@ public class UserController {
         }
 
         try {
-            // 현재 비밀번호 확인
             boolean isVerified = userService.verifyPassword(userId, new PasswordDto(currentPassword));
             if (!isVerified) {
                 return ResponseEntity.status(400).body("현재 비밀번호가 일치하지 않습니다.");
             }
-
-            // 비밀번호 변경
             userService.updatePassword(userId, new PasswordDto(newPassword));
             return ResponseEntity.ok("비밀번호가 성공적으로 변경되었습니다.");
         } catch (Exception e) {
@@ -139,4 +163,3 @@ public class UserController {
         }
     }
 }
-
