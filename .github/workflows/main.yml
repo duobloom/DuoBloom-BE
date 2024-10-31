@@ -1,4 +1,4 @@
-name: CI/CD using GitHub Actions & Docker
+name: DuoBloom CI/CD pipeline
 
 on:
   push:
