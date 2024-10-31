@@ -5,13 +5,15 @@ import POT.DuoBloom.board.entity.BoardComment;
 import POT.DuoBloom.board.service.BoardService;
 import POT.DuoBloom.user.entity.User;
 import POT.DuoBloom.user.service.UserService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 
 @Slf4j
 @RequiredArgsConstructor
@@ -23,7 +25,11 @@ public class BoardCommentController {
     private final BoardService boardService;
     private final UserService userService;
 
-    // 댓글 추가
+    @Operation(summary = "댓글 추가", description = "지정된 게시물에 댓글을 추가합니다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "댓글 추가 성공"),
+            @ApiResponse(responseCode = "401", description = "로그인이 필요합니다.")
+    })
     @PostMapping("/{boardId}/comment")
     public ResponseEntity<BoardCommentDto> addComment(@PathVariable Integer boardId,
                                                       @RequestBody String content,
@@ -38,7 +44,12 @@ public class BoardCommentController {
         return ResponseEntity.ok(responseDto);
     }
 
-    // 댓글 삭제
+    @Operation(summary = "댓글 삭제", description = "지정된 댓글을 삭제합니다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "댓글 삭제 성공"),
+            @ApiResponse(responseCode = "401", description = "로그인이 필요합니다."),
+            @ApiResponse(responseCode = "404", description = "댓글을 찾을 수 없습니다.")
+    })
     @DeleteMapping("/{boardId}/comments/{commentId}")
     public ResponseEntity<Void> deleteComment(@PathVariable Long commentId, HttpSession session) {
         Long userId = (Long) session.getAttribute("userId");
@@ -48,6 +59,4 @@ public class BoardCommentController {
         boardService.deleteComment(commentId);
         return ResponseEntity.noContent().build();
     }
-
-
 }
