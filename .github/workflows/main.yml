@@ -21,6 +21,19 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
 
+    # .env 파일 생성
+    - name: Create .env file
+      run: |
+        echo "DB_URL=${{ secrets.DB_URL }}" >> .env
+        echo "DB_USERNAME=${{ secrets.DB_USERNAME }}" >> .env
+        echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
+        echo "REDIS_HOST=${{ secrets.REDIS_HOST }}" >> .env
+        echo "REDIS_PORT=${{ secrets.REDIS_PORT }}" >> .env
+        echo "SMTP_HOST=${{ secrets.SMTP_HOST }}" >> .env
+        echo "SMTP_PORT=${{ secrets.SMTP_PORT }}" >> .env
+        echo "SMTP_USERNAME=${{ secrets.SMTP_USERNAME }}" >> .env
+        echo "SMTP_PASSWORD=${{ secrets.SMTP_PASSWORD }}" >> .env
+
     # Gradle 캐시 설정
     - name: Cache Gradle packages
       uses: actions/cache@v3
@@ -31,7 +44,10 @@ jobs:
           gradle-${{ runner.os }}-
 
     - name: Build with Gradle Wrapper
-      run: ./gradlew build
+      run: ./gradlew build --info --stacktrace --scan
+
+    - name: Run Tests
+      run: ./gradlew test --info --stacktrace --scan --env-file .env
 
     # Docker 빌드 및 Docker Hub에 푸시
     - name: Docker build & push to Docker Hub
@@ -39,32 +55,3 @@ jobs:
         docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
         docker build -t ${{ secrets.DOCKER_USERNAME }}/docker-test:latest .
         docker push ${{ secrets.DOCKER_USERNAME }}/docker-test:latest
-
-    # EC2에 배포
-    - name: Docker image pull & deploy to EC2
-      uses: appleboy/ssh-action@master
-      with:
-        host: ${{ secrets.EC2_HOST }}
-        username: ubuntu
-        key: ${{ secrets.EC2_PRIVATE_KEY }}
-        script: |
-          # 최신 이미지 Pull
-          sudo docker pull ${{ secrets.DOCKER_USERNAME }}/docker-test:latest
-
-          # 기존 컨테이너 중지 및 삭제
-          CONTAINER_ID=$(sudo docker ps -q --filter "ancestor=${{ secrets.DOCKER_USERNAME }}/docker-test:latest")
-          if [ -n "$CONTAINER_ID" ]; then
-            sudo docker stop $CONTAINER_ID && sudo docker rm $CONTAINER_ID
-          fi
-
-          # 새 컨테이너 실행 및 .env 파일 참조
-          sudo docker run -d --log-driver=syslog --name docker-test -p 8080:8080 \
-            --env-file ~/.env \
-            ${{ secrets.DOCKER_USERNAME }}/docker-test:latest
-
-          # 실행 중인 컨테이너 확인
-          sudo docker ps -a | grep "docker-test"
-
-          # 사용하지 않는 컨테이너 및 이미지 정리
-          sudo docker container prune -f
-          sudo docker image prune -a -f
