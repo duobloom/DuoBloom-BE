@@ -8,10 +8,20 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
     permissions:
       contents: read
+
+    env:
+      DB_URL: ${{ secrets.DB_URL }}
+      DB_USERNAME: ${{ secrets.DB_USERNAME }}
+      DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+      REDIS_HOST: ${{ secrets.REDIS_HOST }}
+      REDIS_PORT: ${{ secrets.REDIS_PORT }}
+      SMTP_HOST: ${{ secrets.SMTP_HOST }}
+      SMTP_PORT: ${{ secrets.SMTP_PORT }}
+      SMTP_USERNAME: ${{ secrets.SMTP_USERNAME }}
+      SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
 
     steps:
     - uses: actions/checkout@v4
@@ -49,6 +59,17 @@ jobs:
         username: ubuntu
         key: ${{ secrets.EC2_PRIVATE_KEY }}
         script: |
+          # 환경 변수 로깅 테스트
+          echo "DB_URL=${DB_URL}"
+          echo "DB_USERNAME=${DB_USERNAME}"
+          echo "DB_PASSWORD=${DB_PASSWORD}"
+          echo "REDIS_HOST=${REDIS_HOST}"
+          echo "REDIS_PORT=${REDIS_PORT}"
+          echo "SMTP_HOST=${SMTP_HOST}"
+          echo "SMTP_PORT=${SMTP_PORT}"
+          echo "SMTP_USERNAME=${SMTP_USERNAME}"
+          echo "SMTP_PASSWORD=${SMTP_PASSWORD}"
+
           # 최신 이미지 Pull
           sudo docker pull ${{ secrets.DOCKER_USERNAME }}/docker-test:latest
 
