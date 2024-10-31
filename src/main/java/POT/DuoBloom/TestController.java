@@ -7,6 +7,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class TestController {
     @GetMapping("/")
     public String home() {
-        return "CI/CD with Docker!";
+        return "CI/CD 성공!";
     }
 }
