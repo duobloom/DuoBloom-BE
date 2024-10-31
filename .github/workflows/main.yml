@@ -53,46 +53,37 @@ jobs:
 
     # EC2 배포
     - name: Docker image pull & deploy to EC2
-      uses: appleboy/ssh-action@master
-      with:
-        host: ${{ secrets.EC2_HOST }}
-        username: ubuntu
-        key: ${{ secrets.EC2_PRIVATE_KEY }}
-        script: |
-          # 환경 변수 로깅 테스트
-          echo "DB_URL=${DB_URL}"
-          echo "DB_USERNAME=${DB_USERNAME}"
-          echo "DB_PASSWORD=${DB_PASSWORD}"
-          echo "REDIS_HOST=${REDIS_HOST}"
-          echo "REDIS_PORT=${REDIS_PORT}"
-          echo "SMTP_HOST=${SMTP_HOST}"
-          echo "SMTP_PORT=${SMTP_PORT}"
-          echo "SMTP_USERNAME=${SMTP_USERNAME}"
-          echo "SMTP_PASSWORD=${SMTP_PASSWORD}"
+  uses: appleboy/ssh-action@master
+  with:
+    host: ${{ secrets.EC2_HOST }}
+    username: ubuntu
+    key: ${{ secrets.EC2_PRIVATE_KEY }}
+    script: |
+      # 최신 이미지 Pull
+      sudo docker pull ${{ secrets.DOCKER_USERNAME }}/docker-test:latest
 
-          # 최신 이미지 Pull
-          sudo docker pull ${{ secrets.DOCKER_USERNAME }}/docker-test:latest
+      # 기존 컨테이너 중지 및 삭제
+      CONTAINER_ID=$(sudo docker ps -q --filter "ancestor=${{ secrets.DOCKER_USERNAME }}/docker-test:latest")
+      if [ -n "$CONTAINER_ID" ]; then
+        sudo docker stop $CONTAINER_ID && sudo docker rm $CONTAINER_ID
+      fi
 
-          # 기존 컨테이너 중지 및 삭제
-          CONTAINER_ID=$(sudo docker ps -q --filter ancestor=${{ secrets.DOCKER_USERNAME }}/docker-test:latest)
-          if [ -n "$CONTAINER_ID" ]; then
-            sudo docker stop $CONTAINER_ID
-            sudo docker rm $CONTAINER_ID
-          fi
+      # 컨테이너 실행
+      sudo docker run -d --log-driver=syslog --name docker-test -p 8080:8080 \
+        -e DB_URL=${{ secrets.DB_URL }} \
+        -e DB_USERNAME=${{ secrets.DB_USERNAME }} \
+        -e DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
+        -e REDIS_HOST=${{ secrets.REDIS_HOST }} \
+        -e REDIS_PORT=${{ secrets.REDIS_PORT }} \
+        -e SMTP_HOST=${{ secrets.SMTP_HOST }} \
+        -e SMTP_PORT=${{ secrets.SMTP_PORT }} \
+        -e SMTP_USERNAME=${{ secrets.SMTP_USERNAME }} \
+        -e SMTP_PASSWORD=${{ secrets.SMTP_PASSWORD }} \
+        ${{ secrets.DOCKER_USERNAME }}/docker-test:latest
 
-          # 컨테이너 실행 및 GitHub Secrets 환경 변수 전달
-          sudo docker run -d --log-driver=syslog --name docker-test -p 8080:8080 \
-            -e DB_URL=${{ secrets.DB_URL }} \
-            -e DB_USERNAME=${{ secrets.DB_USERNAME }} \
-            -e DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
-            -e REDIS_HOST=${{ secrets.REDIS_HOST }} \
-            -e REDIS_PORT=${{ secrets.REDIS_PORT }} \
-            -e SMTP_HOST=${{ secrets.SMTP_HOST }} \
-            -e SMTP_PORT=${{ secrets.SMTP_PORT }} \
-            -e SMTP_USERNAME=${{ secrets.SMTP_USERNAME }} \
-            -e SMTP_PASSWORD=${{ secrets.SMTP_PASSWORD }} \
-            ${{ secrets.DOCKER_USERNAME }}/docker-test:latest
+      # 실행 중인 컨테이너 확인
+      sudo docker ps -a | grep "docker-test"
 
-          # 사용하지 않는 컨테이너 및 이미지 정리
-          sudo docker container prune -f
-          sudo docker image prune -a -f
+      # 사용하지 않는 컨테이너 및 이미지 정리
+      sudo docker container prune -f
+      sudo docker image prune -a -f
