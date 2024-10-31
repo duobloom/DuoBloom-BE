@@ -34,9 +34,9 @@ public class PointTransactionService {
     }
 
     @Transactional
-    public PointTransactionDTO increasePoints(User user, Integer amount, TransactionType transactionType, String tid) {
+    public PointTransactionDTO increasePoints(User user, Integer amount, TransactionType transactionType) {
         log.info("Increasing points for user {} by {} points", user.getUserId(), amount);
-        PointTransactionDTO result = processTransaction(user, amount, transactionType, tid);
+        PointTransactionDTO result = processTransaction(user, amount, transactionType);
         log.info("Points increased for user {}: new balance is {}", user.getUserId(), user.getBalance());
         return result;
     }
@@ -48,12 +48,12 @@ public class PointTransactionService {
             throw new IllegalArgumentException("Insufficient points.");
         }
         log.info("Decreasing points for user {} by {} points", user.getUserId(), amount);
-        PointTransactionDTO result = processTransaction(user, -amount, transactionType, null);
+        PointTransactionDTO result = processTransaction(user, -amount, transactionType);
         log.info("Points decreased for user {}: new balance is {}", user.getUserId(), user.getBalance());
         return result;
     }
 
-    private PointTransactionDTO processTransaction(User user, Integer amount, TransactionType transactionType, String tid) {
+    private PointTransactionDTO processTransaction(User user, Integer amount, TransactionType transactionType) {
         user.updateBalance(amount);
 
         PointTransaction transaction = PointTransaction.builder()
