@@ -5,8 +5,8 @@ import POT.DuoBloom.board.service.BoardService;
 import POT.DuoBloom.emotion.dto.EmotionResponseDto;
 import POT.DuoBloom.emotion.service.EmotionService;
 import POT.DuoBloom.feed.dto.FeedResponseDto;
-import POT.DuoBloom.feed.dto.QuestionWithAnswersDto;
-import POT.DuoBloom.feed.dto.QuestionDto;
+import POT.DuoBloom.question.service.QuestionService;
+import POT.DuoBloom.question.dto.QuestionWithAnswersDto;
 import POT.DuoBloom.user.UserRepository;
 import POT.DuoBloom.user.entity.User;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +24,7 @@ public class FeedService {
 
     private final EmotionService emotionService;
     private final BoardService boardService;
-    private final FeedQuestionService feedQuestionService;
+    private final QuestionService questionService;
     private final UserRepository userRepository;
 
     @Transactional(readOnly = true)
@@ -47,7 +47,7 @@ public class FeedService {
         List<BoardResponseDto> coupleBoards = boardService.getBoardsByDateAndUser(feedDate, coupleUser);
 
         // Question + Answer 조회 후 변환
-        List<QuestionWithAnswersDto> questionsWithAnswers = feedQuestionService.getQuestionsWithAnswerStatus(feedDate, user.getUserId())
+        List<QuestionWithAnswersDto> questionsWithAnswers = questionService.getQuestionsWithAnswerStatus(feedDate, user.getUserId())
                 .stream()
                 .map(questionDto -> new QuestionWithAnswersDto(
                         questionDto.getQuestionId(),

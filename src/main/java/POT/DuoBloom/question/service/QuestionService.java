@@ -1,13 +1,13 @@
-package POT.DuoBloom.feed.service;
+package POT.DuoBloom.question.service;
 
-import POT.DuoBloom.feed.dto.AnswerDto;
-import POT.DuoBloom.feed.dto.QuestionDto;
-import POT.DuoBloom.feed.entity.Answer;
-import POT.DuoBloom.feed.entity.Question;
-import POT.DuoBloom.feed.mapper.AnswerMapper;
-import POT.DuoBloom.feed.mapper.QuestionMapper;
-import POT.DuoBloom.feed.repository.AnswerRepository;
-import POT.DuoBloom.feed.repository.QuestionRepository;
+import POT.DuoBloom.question.dto.AnswerDto;
+import POT.DuoBloom.question.dto.QuestionDto;
+import POT.DuoBloom.question.entity.Answer;
+import POT.DuoBloom.question.entity.Question;
+import POT.DuoBloom.question.mapper.AnswerMapper;
+import POT.DuoBloom.question.mapper.QuestionMapper;
+import POT.DuoBloom.question.repository.AnswerRepository;
+import POT.DuoBloom.question.repository.QuestionRepository;
 import POT.DuoBloom.point.pointTransaction.PointTransactionService;
 import POT.DuoBloom.point.pointTransaction.TransactionType;
 import POT.DuoBloom.user.UserRepository;
@@ -18,7 +18,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -26,7 +25,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class FeedQuestionService {
+public class QuestionService {
 
     private final AnswerRepository answerRepository;
     private final QuestionRepository questionRepository;

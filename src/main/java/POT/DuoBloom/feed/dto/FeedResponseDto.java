@@ -2,6 +2,7 @@ package POT.DuoBloom.feed.dto;
 
 import POT.DuoBloom.board.dto.BoardResponseDto;
 import POT.DuoBloom.emotion.dto.EmotionResponseDto;
+import POT.DuoBloom.question.dto.QuestionWithAnswersDto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 

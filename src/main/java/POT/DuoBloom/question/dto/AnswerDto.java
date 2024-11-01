@@ -1,4 +1,4 @@
-package POT.DuoBloom.feed.dto;
+package POT.DuoBloom.question.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

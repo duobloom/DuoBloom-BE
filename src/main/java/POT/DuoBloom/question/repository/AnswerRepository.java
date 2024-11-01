@@ -1,6 +1,6 @@
-package POT.DuoBloom.feed.repository;
+package POT.DuoBloom.question.repository;
 
-import POT.DuoBloom.feed.entity.Answer;
+import POT.DuoBloom.question.entity.Answer;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
