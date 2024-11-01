@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 
 @Getter
@@ -17,8 +17,8 @@ public class Question {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long questionId;
 
-    @Column(nullable = false)
-    private LocalDateTime date;
+    @Column(name = "feed_date", nullable = false)
+    private LocalDate feedDate;
 
     @Column(nullable = false)
     private String content;
@@ -26,10 +26,8 @@ public class Question {
     @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Answer> answers;
 
-    public Question(LocalDateTime date, String content) {
-        this.date = date;
+    public Question(LocalDate feedDate, String content) {
+        this.feedDate = feedDate;
         this.content = content;
     }
 }
-
-

@@ -11,6 +11,6 @@ import java.util.Optional;
 
 @Repository
 public interface BoardRepository extends JpaRepository<Board, Integer> {
-    Optional<Board> findById(Integer BoardId);
-    List<Board> findByUserAndDate(User user, LocalDate date);
+    Optional<Board> findById(Integer boardId);
+    List<Board> findByUserAndFeedDate(User user, LocalDate feedDate);
 }

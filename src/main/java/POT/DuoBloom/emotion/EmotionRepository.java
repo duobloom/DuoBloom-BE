@@ -10,5 +10,5 @@ import java.util.Optional;
 
 @Repository
 public interface EmotionRepository extends JpaRepository<Emotion, Long> {
-    Optional<Emotion> findByDateAndUsers(LocalDate date, User users);
+    Optional<Emotion> findByFeedDateAndUsers(LocalDate feedDate, User users);
 }

@@ -38,11 +38,11 @@ public class EmailService {
 
             // 이메일 본문
             // TODO: 디자인 맞추어 색 변경
-            String body = "<h1 style='color:#2c2f33;'>안녕하세요, DuoBloom입니다.</h1>"
-                    + "<h3 style='color:#99aab5;'>회원가입을 위해 요청하신 인증 번호입니다.</h3>"
-                    + "<div align='center' style='border:1px solid #2c2f33; font-family:verdana;'>"
-                    + "<h2 style='color:#2c2f33;'>회원가입 인증 코드입니다.</h2>"
-                    + "<h1 style='color:#7289da'>" + authCode + "</h1>"
+            String body = "<h2 style='color:#212721; font-family: Pretendard, sans-serif;'>소중한 길을 따뜻하게 동행하는<br>DuoBloom</h2>"
+                    + "<h3 style='color:#212721; font-family: Pretendard, sans-serif;'>회원가입을 위해 요청하신 인증 번호입니다.</h3>"
+                    + "<div align='center' style='background-color:#FFF5F5; border-radius:15px; padding:20px; font-family: Pretendard, sans-serif;'>"
+                    + "<h2 style='color:#FF5A5A; font-family: Pretendard, sans-serif;'>회원가입 인증 코드입니다.</h2>"
+                    + "<h1 style='color:#FF5A5A; font-family: Pretendard, sans-serif;'>" + authCode + "</h1>"
                     + "</div>";
 
             message.setText(body, "UTF-8", "html");

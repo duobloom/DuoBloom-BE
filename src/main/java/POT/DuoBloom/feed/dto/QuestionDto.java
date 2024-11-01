@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 
 @Data
@@ -12,10 +12,9 @@ import java.util.List;
 @AllArgsConstructor
 public class QuestionDto {
     private Long questionId;
-    private LocalDateTime date;
+    private LocalDate feedDate; // feedDate로 수정
     private String content;
     private String myAnswerStatus;
     private String coupleAnswerStatus;
     private List<AnswerDto> answers;
 }
-

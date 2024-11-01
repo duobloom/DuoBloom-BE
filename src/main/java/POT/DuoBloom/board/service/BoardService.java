@@ -43,17 +43,33 @@ public class BoardService {
         return boardRepository.save(board);
     }
 
-    // 전체 글 조회
+    // 전체 글 조회 (댓글 개수 및 좋아요 수 포함)
     @Transactional(readOnly = true)
-    public List<Board> getAllBoards() {
-        return boardRepository.findAll();
+    public List<BoardResponseDto> getAllBoards() {
+        return boardRepository.findAll().stream()
+                .map(board -> {
+                    int likeCount = likeRepository.countByBoard(board);
+                    int commentCount = boardCommentRepository.countByBoard_BoardId(board.getBoardId()); // 댓글 개수
+
+                    return new BoardResponseDto(
+                            board.getBoardId(),
+                            board.getTitle(),
+                            board.getContent(),
+                            board.getUpdatedAt(),
+                            null, // 댓글 내용 제외
+                            likeCount,
+                            commentCount
+                    );
+                })
+                .collect(Collectors.toList());
     }
 
-    // 게시글 상세 조회 메서드 (댓글 포함)
+    // 게시글 상세 조회 (댓글 목록, 댓글 개수 및 좋아요 수 포함)
     @Transactional(readOnly = true)
     public BoardResponseDto getBoardDetailsById(Integer boardId) {
         Board board = boardRepository.findById(boardId)
                 .orElseThrow(() -> new IllegalStateException("해당 글이 존재하지 않습니다."));
+        int likeCount = likeRepository.countByBoard(board);
 
         List<BoardComment> comments = boardCommentRepository.findByBoard_BoardId(boardId);
         List<BoardCommentDto> commentDtos = comments.stream()
@@ -66,9 +82,34 @@ public class BoardService {
                 board.getTitle(),
                 board.getContent(),
                 board.getUpdatedAt(),
-                commentDtos
+                commentDtos, // 댓글 목록 포함
+                likeCount,
+                comments.size() // 댓글 개수
         );
     }
+
+    // 날짜별 사용자 게시글 조회 (댓글 개수 및 좋아요 수 포함)
+    @Transactional(readOnly = true)
+    public List<BoardResponseDto> getBoardsByDateAndUser(LocalDate date, User user) {
+        List<Board> boards = boardRepository.findByUserAndFeedDate(user, date);
+        return boards.stream()
+                .map(board -> {
+                    int likeCount = likeRepository.countByBoard(board);
+                    int commentCount = boardCommentRepository.countByBoard_BoardId(board.getBoardId());
+
+                    return new BoardResponseDto(
+                            board.getBoardId(),
+                            board.getTitle(),
+                            board.getContent(),
+                            board.getUpdatedAt(),
+                            null, // 댓글 내용 제외
+                            likeCount,
+                            commentCount
+                    );
+                })
+                .collect(Collectors.toList());
+    }
+
 
     // 글 수정
     @Transactional
@@ -84,7 +125,9 @@ public class BoardService {
             throw new IllegalStateException("해당 글의 작성자만 수정할 수 있습니다.");
         }
 
-        board = new Board(user, title, content, LocalDateTime.now());
+        board.updateTitle(title);
+        board.updateContent(content);
+        board.updateUpdatedAt(LocalDateTime.now());
         return boardRepository.save(board);
     }
 
@@ -147,19 +190,4 @@ public class BoardService {
                 .orElseThrow(() -> new IllegalArgumentException("댓글이 존재하지 않습니다."));
         boardCommentRepository.delete(boardComment);
     }
-
-    @Transactional(readOnly = true)
-    public List<BoardResponseDto> getBoardsByDateAndUser(LocalDate date, User user) {
-        List<Board> boards = boardRepository.findByUserAndDate(user, date);
-        return boards.stream()
-                .map(board -> new BoardResponseDto(
-                        board.getBoardId(),
-                        board.getTitle(),
-                        board.getContent(),
-                        board.getUpdatedAt(),
-                        null // 댓글은 제외
-                ))
-                .collect(Collectors.toList());
-    }
-
 }

@@ -43,7 +43,7 @@ public class EmotionController {
         User users = userService.findById(userId);
         LocalDate localDate = LocalDate.parse(date);
 
-        return emotionService.findByDateAndUsers(localDate, users)
+        return emotionService.findByFeedDateAndUsers(localDate, users)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }

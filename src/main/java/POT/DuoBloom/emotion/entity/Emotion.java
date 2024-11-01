@@ -15,7 +15,7 @@ import java.time.LocalDate;
 @Getter
 @Entity
 @Table(name = "emotions", uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"date", "user_id"})
+        @UniqueConstraint(columnNames = {"feed_date", "user_id"})
 })
 public class Emotion {
 
@@ -29,33 +29,22 @@ public class Emotion {
 
     private String content;
 
-    @Column(nullable = false)
-    private LocalDate date;
+    @Column(name = "feed_date", nullable = false)
+    private LocalDate feedDate;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User users;
+
+    public Emotion(User users, Emoji emoji, String content, LocalDate feedDate) {
+        this.users = users;
+        this.emoji = emoji;
+        this.content = content;
+        this.feedDate = feedDate;
+    }
 
     public void update(Emoji emoji, String content) {
         this.emoji = emoji;
         this.content = content;
     }
-
-    public void updateEmoji(Emoji emoji) {
-        this.emoji = emoji;
-    }
-
-    public void updateContent(String content) {
-        this.content = content;
-    }
-
-    public void updateDate(LocalDate date) {
-        this.date = date;
-    }
-
-    public void updateUsers(User users) {
-        this.users = users;
-    }
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
-    private User users;
-
-
 }
