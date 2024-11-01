@@ -43,25 +43,28 @@ public class BoardService {
         return boardRepository.save(board);
     }
 
-    // 전체 글 조회 (좋아요 수 포함)
+    // 전체 글 조회 (댓글 개수 및 좋아요 수 포함)
     @Transactional(readOnly = true)
     public List<BoardResponseDto> getAllBoards() {
         return boardRepository.findAll().stream()
                 .map(board -> {
                     int likeCount = likeRepository.countByBoard(board);
+                    int commentCount = boardCommentRepository.countByBoard_BoardId(board.getBoardId()); // 댓글 개수
+
                     return new BoardResponseDto(
                             board.getBoardId(),
                             board.getTitle(),
                             board.getContent(),
                             board.getUpdatedAt(),
-                            null, // 댓글은 제외
-                            likeCount
+                            null, // 댓글 내용 제외
+                            likeCount,
+                            commentCount
                     );
                 })
                 .collect(Collectors.toList());
     }
 
-    // 게시글 상세 조회 (좋아요 수 및 댓글 포함)
+    // 게시글 상세 조회 (댓글 목록, 댓글 개수 및 좋아요 수 포함)
     @Transactional(readOnly = true)
     public BoardResponseDto getBoardDetailsById(Integer boardId) {
         Board board = boardRepository.findById(boardId)
@@ -79,29 +82,34 @@ public class BoardService {
                 board.getTitle(),
                 board.getContent(),
                 board.getUpdatedAt(),
-                commentDtos,
-                likeCount
+                commentDtos, // 댓글 목록 포함
+                likeCount,
+                comments.size() // 댓글 개수
         );
     }
 
-    // 날짜별 사용자 게시글 조회 (좋아요 수 포함)
+    // 날짜별 사용자 게시글 조회 (댓글 개수 및 좋아요 수 포함)
     @Transactional(readOnly = true)
     public List<BoardResponseDto> getBoardsByDateAndUser(LocalDate date, User user) {
         List<Board> boards = boardRepository.findByUserAndFeedDate(user, date);
         return boards.stream()
                 .map(board -> {
                     int likeCount = likeRepository.countByBoard(board);
+                    int commentCount = boardCommentRepository.countByBoard_BoardId(board.getBoardId());
+
                     return new BoardResponseDto(
                             board.getBoardId(),
                             board.getTitle(),
                             board.getContent(),
                             board.getUpdatedAt(),
-                            null, // 댓글 제외
-                            likeCount
+                            null, // 댓글 내용 제외
+                            likeCount,
+                            commentCount
                     );
                 })
                 .collect(Collectors.toList());
     }
+
 
     // 글 수정
     @Transactional
