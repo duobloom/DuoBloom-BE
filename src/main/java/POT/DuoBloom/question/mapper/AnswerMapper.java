@@ -1,8 +1,8 @@
-package POT.DuoBloom.feed.mapper;
+package POT.DuoBloom.question.mapper;
 
-import POT.DuoBloom.feed.dto.AnswerDto;
-import POT.DuoBloom.feed.entity.Answer;
-import POT.DuoBloom.feed.entity.Question;
+import POT.DuoBloom.question.dto.AnswerDto;
+import POT.DuoBloom.question.entity.Answer;
+import POT.DuoBloom.question.entity.Question;
 import POT.DuoBloom.user.entity.User;
 import org.springframework.stereotype.Component;
 

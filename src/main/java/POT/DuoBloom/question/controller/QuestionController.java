@@ -1,8 +1,8 @@
-package POT.DuoBloom.feed.controller;
+package POT.DuoBloom.question.controller;
 
-import POT.DuoBloom.feed.dto.AnswerDto;
-import POT.DuoBloom.feed.dto.QuestionDto;
-import POT.DuoBloom.feed.service.FeedQuestionService;
+import POT.DuoBloom.question.dto.AnswerDto;
+import POT.DuoBloom.question.dto.QuestionDto;
+import POT.DuoBloom.question.service.QuestionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -21,9 +21,9 @@ import java.util.List;
 @CrossOrigin(origins = "http://localhost:3000")
 @RestController
 @RequestMapping("/api/feeds")
-public class FeedQuestionController {
+public class QuestionController {
 
-    private final FeedQuestionService feedQuestionService;
+    private final QuestionService questionService;
 
     @Operation(summary = "날짜별 공통 질문 조회", description = "지정된 날짜의 공통 질문을 커플의 응답 상태와 함께 조회합니다.")
     @ApiResponses({
@@ -37,7 +37,7 @@ public class FeedQuestionController {
         if (userId == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-        return ResponseEntity.ok(feedQuestionService.getQuestionsWithAnswerStatus(date, userId));
+        return ResponseEntity.ok(questionService.getQuestionsWithAnswerStatus(date, userId));
     }
 
     @Operation(summary = "공통 질문 답변 작성", description = "지정된 질문에 대한 답변을 작성합니다.")
@@ -51,7 +51,7 @@ public class FeedQuestionController {
         if (userId == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-        feedQuestionService.createAnswer(answerDto, userId);
+        questionService.createAnswer(answerDto, userId);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
@@ -70,7 +70,7 @@ public class FeedQuestionController {
         if (userId == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-        feedQuestionService.updateAnswer(answerId, answerDto, userId);
+        questionService.updateAnswer(answerId, answerDto, userId);
         return ResponseEntity.ok().build();
     }
 }

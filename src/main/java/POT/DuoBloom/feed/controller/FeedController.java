@@ -17,7 +17,7 @@ import java.time.LocalDate;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:3000")
-@RequestMapping("/api/feed")
+@RequestMapping("/api/feeds")
 @RequiredArgsConstructor
 public class FeedController {
 

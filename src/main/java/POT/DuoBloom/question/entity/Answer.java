@@ -1,4 +1,4 @@
-package POT.DuoBloom.feed.entity;
+package POT.DuoBloom.question.entity;
 
 import POT.DuoBloom.user.entity.User;
 import jakarta.persistence.*;
