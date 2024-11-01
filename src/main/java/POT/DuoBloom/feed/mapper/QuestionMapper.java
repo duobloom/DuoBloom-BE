@@ -24,7 +24,7 @@ public class QuestionMapper {
 
         return new QuestionDto(
                 question.getQuestionId(),
-                question.getDate(),
+                question.getFeedDate(), // feedDate로 수정
                 question.getContent(),
                 myAnswerStatus,
                 coupleAnswerStatus,
@@ -33,6 +33,6 @@ public class QuestionMapper {
     }
 
     public Question toEntity(QuestionDto questionDto) {
-        return new Question(questionDto.getDate(), questionDto.getContent());
+        return new Question(questionDto.getFeedDate(), questionDto.getContent());
     }
 }

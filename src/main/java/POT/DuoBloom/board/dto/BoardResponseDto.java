@@ -16,4 +16,5 @@ public class BoardResponseDto {
     private String content;
     private LocalDateTime updatedAt;
     private List<BoardCommentDto> comments;
+    private int likeCount;
 }

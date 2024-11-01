@@ -2,13 +2,15 @@ package POT.DuoBloom.feed.entity;
 
 import POT.DuoBloom.user.entity.User;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Getter
 @NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Table(name = "answers")
 public class Answer {
@@ -28,22 +30,17 @@ public class Answer {
     @Column(nullable = false)
     private String content;
 
-    @Column(nullable = false)
-    private LocalDateTime createdAt;
-
-    @Column(nullable = false)
-    private LocalDateTime updatedAt;
+    @Column(name = "feed_date", nullable = false)
+    private LocalDate feedDate;
 
     public Answer(User user, Question question, String content) {
         this.user = user;
         this.question = question;
         this.content = content;
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
+        this.feedDate = LocalDate.now();
     }
 
     public void updateContent(String newContent) {
         this.content = newContent;
-        this.updatedAt = LocalDateTime.now();
     }
 }

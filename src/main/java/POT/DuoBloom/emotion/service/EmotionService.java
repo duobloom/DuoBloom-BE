@@ -18,31 +18,25 @@ public class EmotionService {
 
     private final EmotionRepository emotionRepository;
 
-    public Optional<EmotionResponseDto> findByDateAndUsers(LocalDate date, User users) {
-        return emotionRepository.findByDateAndUsers(date, users)
+    public Optional<EmotionResponseDto> findByFeedDateAndUsers(LocalDate feedDate, User users) {
+        return emotionRepository.findByFeedDateAndUsers(feedDate, users)
                 .map(emotion -> new EmotionResponseDto(
                         emotion.getEmotionId(),
                         emotion.getEmoji(),
                         emotion.getContent(),
-                        emotion.getDate()
+                        emotion.getFeedDate()
                 ));
     }
 
-    //TODO: createEmotion 이랑 updateEmotion 합쳐보기
     @Transactional
-    public boolean createEmotion(LocalDate date, User users, EmotionUpdateDto emotionUpdateDto) {
-        Optional<Emotion> existingEmotion = emotionRepository.findByDateAndUsers(date, users);
+    public boolean createEmotion(LocalDate feedDate, User users, EmotionUpdateDto emotionUpdateDto) {
+        Optional<Emotion> existingEmotion = emotionRepository.findByFeedDateAndUsers(feedDate, users);
 
         if (existingEmotion.isPresent()) {
             return false;
         }
 
-        Emotion newEmotion = new Emotion();
-        newEmotion.updateEmoji(emotionUpdateDto.getEmoji());
-        newEmotion.updateContent(emotionUpdateDto.getContent());
-        newEmotion.updateDate(date);
-        newEmotion.updateUsers(users);
-
+        Emotion newEmotion = new Emotion(users, emotionUpdateDto.getEmoji(), emotionUpdateDto.getContent(), feedDate);
         emotionRepository.save(newEmotion);
         return true;
     }

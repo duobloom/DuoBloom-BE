@@ -28,7 +28,7 @@ public class FeedService {
     private final UserRepository userRepository;
 
     @Transactional(readOnly = true)
-    public FeedResponseDto getDailyFeed(LocalDate date, Long userId) {
+    public FeedResponseDto getDailyFeed(LocalDate feedDate, Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
 
@@ -39,15 +39,15 @@ public class FeedService {
         }
 
         // Emotion 조회
-        Optional<EmotionResponseDto> userEmotion = emotionService.findByDateAndUsers(date, user);
-        Optional<EmotionResponseDto> coupleEmotion = emotionService.findByDateAndUsers(date, coupleUser);
+        Optional<EmotionResponseDto> userEmotion = emotionService.findByFeedDateAndUsers(feedDate, user);
+        Optional<EmotionResponseDto> coupleEmotion = emotionService.findByFeedDateAndUsers(feedDate, coupleUser);
 
         // Board 조회
-        List<BoardResponseDto> userBoards = boardService.getBoardsByDateAndUser(date, user);
-        List<BoardResponseDto> coupleBoards = boardService.getBoardsByDateAndUser(date, coupleUser);
+        List<BoardResponseDto> userBoards = boardService.getBoardsByDateAndUser(feedDate, user);
+        List<BoardResponseDto> coupleBoards = boardService.getBoardsByDateAndUser(feedDate, coupleUser);
 
         // Question + Answer 조회 후 변환
-        List<QuestionWithAnswersDto> questionsWithAnswers = feedQuestionService.getQuestionsWithAnswerStatus(date, user.getUserId())
+        List<QuestionWithAnswersDto> questionsWithAnswers = feedQuestionService.getQuestionsWithAnswerStatus(feedDate, user.getUserId())
                 .stream()
                 .map(questionDto -> new QuestionWithAnswersDto(
                         questionDto.getQuestionId(),
@@ -59,7 +59,7 @@ public class FeedService {
                 .collect(Collectors.toList());
 
         return new FeedResponseDto(
-                date,
+                feedDate, // feedDate로 통일
                 userEmotion.orElse(null),
                 coupleEmotion.orElse(null),
                 userBoards,

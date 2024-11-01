@@ -17,7 +17,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -29,37 +28,13 @@ public class BoardController {
     private final BoardService boardService;
     private final UserService userService;
 
-    @Operation(summary = "글 작성", description = "새로운 글을 작성합니다.")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "글 작성 성공"),
-            @ApiResponse(responseCode = "401", description = "로그인이 필요합니다."),
-            @ApiResponse(responseCode = "403", description = "권한이 없습니다.")
-    })
-    @PostMapping
-    public ResponseEntity<BoardResponseDto> createBoard(@RequestBody BoardRequestDto boardRequestDTO, HttpSession session) {
-        Long userId = (Long) session.getAttribute("userId");
-        if (userId == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-        User user = userService.findById(userId);
-        if (!boardService.canAccessBoard(user)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
-        Board board = boardService.createBoard(user, boardRequestDTO.getTitle(), boardRequestDTO.getContent());
-        BoardResponseDto responseDTO = new BoardResponseDto(board.getBoardId(), board.getTitle(), board.getContent(), board.getUpdatedAt(), null);
-        return ResponseEntity.ok(responseDTO);
-    }
-
     @Operation(summary = "전체 글 조회", description = "모든 게시글을 조회합니다.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "글 조회 성공")
     })
     @GetMapping
     public ResponseEntity<List<BoardResponseDto>> getAllBoards() {
-        List<Board> boards = boardService.getAllBoards();
-        List<BoardResponseDto> responseDTOs = boards.stream()
-                .map(board -> new BoardResponseDto(board.getBoardId(), board.getTitle(), board.getContent(), board.getUpdatedAt(), null))
-                .collect(Collectors.toList());
+        List<BoardResponseDto> responseDTOs = boardService.getAllBoards();
         return ResponseEntity.ok(responseDTOs);
     }
 
@@ -83,6 +58,27 @@ public class BoardController {
         return ResponseEntity.ok(responseDTO);
     }
 
+    @Operation(summary = "글 작성", description = "새로운 글을 작성합니다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "글 작성 성공"),
+            @ApiResponse(responseCode = "401", description = "로그인이 필요합니다."),
+            @ApiResponse(responseCode = "403", description = "권한이 없습니다.")
+    })
+    @PostMapping
+    public ResponseEntity<BoardResponseDto> createBoard(@RequestBody BoardRequestDto boardRequestDTO, HttpSession session) {
+        Long userId = (Long) session.getAttribute("userId");
+        if (userId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        User user = userService.findById(userId);
+        if (!boardService.canAccessBoard(user)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        Board board = boardService.createBoard(user, boardRequestDTO.getTitle(), boardRequestDTO.getContent());
+        BoardResponseDto responseDTO = new BoardResponseDto(board.getBoardId(), board.getTitle(), board.getContent(), board.getUpdatedAt(), null, 0);
+        return ResponseEntity.ok(responseDTO);
+    }
+
     @Operation(summary = "글 수정", description = "특정 게시글을 수정합니다.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "글 수정 성공"),
@@ -100,7 +96,7 @@ public class BoardController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         Board board = boardService.updateBoard(user, boardId, boardRequestDTO.getTitle(), boardRequestDTO.getContent());
-        BoardResponseDto responseDTO = new BoardResponseDto(board.getBoardId(), board.getTitle(), board.getContent(), board.getUpdatedAt(), null);
+        BoardResponseDto responseDTO = new BoardResponseDto(board.getBoardId(), board.getTitle(), board.getContent(), board.getUpdatedAt(), null, 0);
         return ResponseEntity.ok(responseDTO);
     }
 

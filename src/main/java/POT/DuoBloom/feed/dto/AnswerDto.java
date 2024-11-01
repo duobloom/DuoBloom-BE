@@ -2,7 +2,7 @@ package POT.DuoBloom.feed.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Data
 @AllArgsConstructor
@@ -11,5 +11,5 @@ public class AnswerDto {
     private Long userId;
     private Long questionId;
     private String content;
-    private LocalDateTime createdAt;
+    private LocalDate feedDate; // feedDate로 수정
 }

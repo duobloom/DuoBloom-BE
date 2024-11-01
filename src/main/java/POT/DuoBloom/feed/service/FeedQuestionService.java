@@ -36,18 +36,18 @@ public class FeedQuestionService {
     private final PointTransactionService pointTransactionService;
 
     // 특정 날짜의 질문을 조회하여 반환
-    public QuestionDto getQuestionByDate(LocalDateTime date) {
-        Question question = questionRepository.findByDate(date)
-                .orElseThrow(() -> new IllegalArgumentException("No question found for date: " + date));
+    public QuestionDto getQuestionByDate(LocalDate feedDate) {
+        Question question = questionRepository.findByFeedDate(feedDate)
+                .orElseThrow(() -> new IllegalArgumentException("No question found for date: " + feedDate));
 
         // 기본 응답 상태로 미응답 설정
         return questionMapper.toDto(question, "미응답", "미응답");
     }
 
+
     // 날짜별 질문 조회와 커플의 응답 상태 및 답변 포함
-    public List<QuestionDto> getQuestionsWithAnswerStatus(LocalDate date, Long userId) {
-        LocalDateTime dateTime = date.atStartOfDay();
-        List<Question> questions = questionRepository.findAllByDate(dateTime);
+    public List<QuestionDto> getQuestionsWithAnswerStatus(LocalDate feedDate, Long userId) {
+        List<Question> questions = questionRepository.findAllByFeedDate(feedDate);
         if (questions.isEmpty()) {
             throw new IllegalArgumentException("해당 날짜에 질문이 없습니다.");
         }
@@ -68,10 +68,11 @@ public class FeedQuestionService {
                     String myAnswerStatus = answerRepository.findByQuestion_QuestionIdAndUser_UserId(question.getQuestionId(), userId).isPresent() ? "응답 완료" : "미응답";
                     String coupleAnswerStatus = (coupleUserId != null && answerRepository.findByQuestion_QuestionIdAndUser_UserId(question.getQuestionId(), coupleUserId).isPresent()) ? "응답 완료" : "미응답";
 
-                    return new QuestionDto(question.getQuestionId(), question.getDate(), question.getContent(), myAnswerStatus, coupleAnswerStatus, answerDtos);
+                    return new QuestionDto(question.getQuestionId(), question.getFeedDate(), question.getContent(), myAnswerStatus, coupleAnswerStatus, answerDtos);
                 })
                 .collect(Collectors.toList());
     }
+
 
     @Transactional
     public void createAnswer(AnswerDto answerDto, Long userId) {

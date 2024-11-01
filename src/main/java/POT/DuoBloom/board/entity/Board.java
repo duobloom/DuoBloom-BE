@@ -18,6 +18,7 @@ import java.util.List;
 @Getter
 @Entity
 public class Board {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer boardId;
@@ -26,8 +27,8 @@ public class Board {
 
     private String content;
 
-    @Column(nullable = false)
-    private LocalDate date = LocalDate.now();
+    @Column(name = "feed_date", nullable = false)
+    private LocalDate feedDate = LocalDate.now();
 
     private LocalDateTime updatedAt;
 
@@ -40,11 +41,18 @@ public class Board {
         this.title = title;
         this.content = content;
         this.updatedAt = updatedAt != null ? updatedAt : LocalDateTime.now();
-        this.date = this.updatedAt.toLocalDate();
+        this.feedDate = this.updatedAt.toLocalDate();
     }
 
-    @OneToMany(mappedBy = "board", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<BoardLike> boardLikes = new ArrayList<>();
+    public void updateTitle(String title) {
+        this.title = title;
+    }
 
+    public void updateContent(String content) {
+        this.content = content;
+    }
 
+    public void updateUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
+    }
 }

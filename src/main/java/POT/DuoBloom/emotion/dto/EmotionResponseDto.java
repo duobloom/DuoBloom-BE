@@ -14,5 +14,5 @@ public class EmotionResponseDto {
     private Long emotionId;
     private Emoji emoji;
     private String content;
-    private LocalDate date;
+    private LocalDate feedDate;
 }
