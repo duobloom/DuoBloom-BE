@@ -23,9 +23,8 @@ public class Emotion {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long emotionId;
 
-    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Emoji emoji;
+    private Integer emoji;
 
     private String content;
 
@@ -36,14 +35,14 @@ public class Emotion {
     @JoinColumn(name = "user_id", nullable = false)
     private User users;
 
-    public Emotion(User users, Emoji emoji, String content, LocalDate feedDate) {
+    public Emotion(User users, Integer emoji, String content, LocalDate feedDate) {
         this.users = users;
         this.emoji = emoji;
         this.content = content;
         this.feedDate = feedDate;
     }
 
-    public void update(Emoji emoji, String content) {
+    public void update(Integer emoji, String content) {
         this.emoji = emoji;
         this.content = content;
     }
