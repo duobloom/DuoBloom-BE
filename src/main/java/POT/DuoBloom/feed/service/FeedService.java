@@ -59,7 +59,7 @@ public class FeedService {
                 .collect(Collectors.toList());
 
         return new FeedResponseDto(
-                feedDate, // feedDate로 통일
+                feedDate,
                 userEmotion.orElse(null),
                 coupleEmotion.orElse(null),
                 userBoards,
@@ -67,4 +67,5 @@ public class FeedService {
                 questionsWithAnswers
         );
     }
+
 }
