@@ -36,6 +36,15 @@ public class Board {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
+    @ElementCollection
+    @CollectionTable(name = "board_photos", joinColumns = @JoinColumn(name = "board_id"))
+    @Column(name = "photo_url")
+    private List<String> photoUrls = new ArrayList<>(); // 사진 URL 리스트
+
+    public void addPhotoUrl(String photoUrl) {
+        this.photoUrls.add(photoUrl);
+    }
+
     public Board(User user, String title, String content, LocalDateTime updatedAt) {
         this.user = user;
         this.title = title;
