@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -36,19 +37,16 @@ public class QuestionService {
 
     // 특정 날짜의 질문을 조회하여 반환
     public QuestionDto getQuestionByDate(LocalDate feedDate) {
-        Question question = questionRepository.findByFeedDate(feedDate)
-                .orElseThrow(() -> new IllegalArgumentException("No question found for date: " + feedDate));
-
-        // 기본 응답 상태로 미응답 설정
-        return questionMapper.toDto(question, "미응답", "미응답");
+        return questionRepository.findByFeedDate(feedDate)
+                .map(question -> questionMapper.toDto(question, "미응답", "미응답"))
+                .orElse(null); // 질문이 없으면 null 반환
     }
-
 
     // 날짜별 질문 조회와 커플의 응답 상태 및 답변 포함
     public List<QuestionDto> getQuestionsWithAnswerStatus(LocalDate feedDate, Long userId) {
         List<Question> questions = questionRepository.findAllByFeedDate(feedDate);
         if (questions.isEmpty()) {
-            throw new IllegalArgumentException("해당 날짜에 질문이 없습니다.");
+            return Collections.emptyList();
         }
 
         User user = userRepository.findById(userId)
@@ -71,7 +69,6 @@ public class QuestionService {
                 })
                 .collect(Collectors.toList());
     }
-
 
     @Transactional
     public void createAnswer(AnswerDto answerDto, Long userId) {
