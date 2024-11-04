@@ -26,7 +26,6 @@ public class Emotion {
     @Column(nullable = false)
     private Integer emoji;
 
-    private String content;
 
     @Column(name = "feed_date", nullable = false)
     private LocalDate feedDate;
@@ -35,15 +34,13 @@ public class Emotion {
     @JoinColumn(name = "user_id", nullable = false)
     private User users;
 
-    public Emotion(User users, Integer emoji, String content, LocalDate feedDate) {
+    public Emotion(User users, Integer emoji, LocalDate feedDate) {
         this.users = users;
         this.emoji = emoji;
-        this.content = content;
         this.feedDate = feedDate;
     }
 
-    public void update(Integer emoji, String content) {
+    public void update(Integer emoji) {
         this.emoji = emoji;
-        this.content = content;
     }
 }

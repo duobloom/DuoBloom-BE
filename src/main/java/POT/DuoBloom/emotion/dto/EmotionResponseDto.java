@@ -12,6 +12,5 @@ import java.time.LocalDate;
 public class EmotionResponseDto {
     private Long emotionId;
     private Integer emoji;
-    private String content;
     private LocalDate feedDate;
 }

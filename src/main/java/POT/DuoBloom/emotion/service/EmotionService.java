@@ -23,7 +23,6 @@ public class EmotionService {
                 .map(emotion -> new EmotionResponseDto(
                         emotion.getEmotionId(),
                         emotion.getEmoji(),
-                        emotion.getContent(),
                         emotion.getFeedDate()
                 ));
     }
@@ -36,7 +35,7 @@ public class EmotionService {
             return false;
         }
 
-        Emotion newEmotion = new Emotion(users, emotionUpdateDto.getEmoji(), emotionUpdateDto.getContent(), feedDate);
+        Emotion newEmotion = new Emotion(users, emotionUpdateDto.getEmoji(), feedDate);
         emotionRepository.save(newEmotion);
         return true;
     }
@@ -46,6 +45,6 @@ public class EmotionService {
         Emotion emotion = emotionRepository.findById(emotionId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 감정을 찾을 수 없습니다. ID: " + emotionId));
 
-        emotion.update(emotionUpdateDto.getEmoji(), emotionUpdateDto.getContent());
+        emotion.update(emotionUpdateDto.getEmoji());
     }
 }

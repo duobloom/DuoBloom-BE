@@ -7,5 +7,4 @@ import lombok.*;
 @AllArgsConstructor
 public class EmotionUpdateDto {
     private Integer emoji;
-    private String content;
 }
