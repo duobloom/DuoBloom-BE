@@ -35,34 +35,41 @@ public class BoardService {
 
     // 글 작성
     @Transactional
-    public Board createBoard(User user, String title, String content) {
+    public Board createBoard(User user, String title, String content, List<String> photoUrls) {
         if (!canAccessBoard(user)) {
             throw new IllegalStateException("커플인 경우에만 커뮤니티에 글을 작성할 수 있습니다.");
         }
         Board board = new Board(user, title, content, LocalDateTime.now());
+
+        if (photoUrls != null) {
+            photoUrls.forEach(board::addPhotoUrl);
+        }
+
         return boardRepository.save(board);
     }
 
-    // 전체 글 조회 (댓글 개수 및 좋아요 수 포함)
+    // 전체 글 조회
     @Transactional(readOnly = true)
     public List<BoardResponseDto> getAllBoards() {
         return boardRepository.findAll().stream()
                 .map(board -> {
                     int likeCount = likeRepository.countByBoard(board);
-                    int commentCount = boardCommentRepository.countByBoard_BoardId(board.getBoardId()); // 댓글 개수
+                    int commentCount = boardCommentRepository.countByBoard_BoardId(board.getBoardId());
 
                     return new BoardResponseDto(
                             board.getBoardId(),
                             board.getTitle(),
                             board.getContent(),
                             board.getUpdatedAt(),
-                            null, // 댓글 내용 제외
+                            board.getPhotoUrls(),
+                            null,
                             likeCount,
                             commentCount
                     );
                 })
                 .collect(Collectors.toList());
     }
+
 
     // 게시글 상세 조회 (댓글 목록, 댓글 개수 및 좋아요 수 포함)
     @Transactional(readOnly = true)
@@ -82,11 +89,13 @@ public class BoardService {
                 board.getTitle(),
                 board.getContent(),
                 board.getUpdatedAt(),
-                commentDtos, // 댓글 목록 포함
+                board.getPhotoUrls(), // 추가된 필드
+                commentDtos,
                 likeCount,
-                comments.size() // 댓글 개수
+                comments.size()
         );
     }
+
 
     // 날짜별 사용자 게시글 조회 (댓글 개수 및 좋아요 수 포함)
     @Transactional(readOnly = true)
@@ -102,13 +111,15 @@ public class BoardService {
                             board.getTitle(),
                             board.getContent(),
                             board.getUpdatedAt(),
-                            null, // 댓글 내용 제외
+                            board.getPhotoUrls(),
+                            null,
                             likeCount,
                             commentCount
                     );
                 })
                 .collect(Collectors.toList());
     }
+
 
 
     // 글 수정

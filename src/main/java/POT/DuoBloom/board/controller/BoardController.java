@@ -74,10 +74,16 @@ public class BoardController {
         if (!boardService.canAccessBoard(user)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
-        Board board = boardService.createBoard(user, boardRequestDTO.getTitle(), boardRequestDTO.getContent());
-        BoardResponseDto responseDTO = new BoardResponseDto(board.getBoardId(), board.getTitle(), board.getContent(), board.getUpdatedAt(), null, 0, 0);
+
+        Board board = boardService.createBoard(user, boardRequestDTO.getTitle(), boardRequestDTO.getContent(), boardRequestDTO.getPhotoUrls());
+        BoardResponseDto responseDTO = new BoardResponseDto(
+                board.getBoardId(), board.getTitle(), board.getContent(),
+                board.getUpdatedAt(), board.getPhotoUrls(), null, 0, 0
+        );
         return ResponseEntity.ok(responseDTO);
     }
+
+
 
     @Operation(summary = "글 수정", description = "특정 게시글을 수정합니다.")
     @ApiResponses({
@@ -96,9 +102,13 @@ public class BoardController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         Board board = boardService.updateBoard(user, boardId, boardRequestDTO.getTitle(), boardRequestDTO.getContent());
-        BoardResponseDto responseDTO = new BoardResponseDto(board.getBoardId(), board.getTitle(), board.getContent(), board.getUpdatedAt(), null, 0, 0);
+        BoardResponseDto responseDTO = new BoardResponseDto(
+                board.getBoardId(), board.getTitle(), board.getContent(),
+                board.getUpdatedAt(), board.getPhotoUrls(), null, 0, 0
+        );
         return ResponseEntity.ok(responseDTO);
     }
+
 
     @Operation(summary = "글 삭제", description = "특정 게시글을 삭제합니다.")
     @ApiResponses({
