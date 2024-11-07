@@ -48,16 +48,12 @@ public class HospitalService {
         hospitalDto.setLinkUrl(hospital.getLinkUrl());
 
         List<KeywordsMappingDto> keywordMappings = hospital.getKeywordMappings().stream()
-                .filter(mapping -> mapping != null && mapping.getId() != null)
-                .map(mapping -> {
-                    KeywordsMappingDto dto = new KeywordsMappingDto();
-                    dto.setId(mapping.getId().intValue());
-                    dto.setKeyword(mapping.getKeyword() != null ? mapping.getKeyword().getKeyword().toString() : null);
-                    return dto;
-                })
+                .map(mapping -> new KeywordsMappingDto(
+                        mapping.getKeyword() != null ? mapping.getKeyword().getKeyword().toString() : null))
                 .collect(Collectors.toList());
 
         hospitalDto.setKeywordMappings(keywordMappings);
         return hospitalDto;
     }
+
 }

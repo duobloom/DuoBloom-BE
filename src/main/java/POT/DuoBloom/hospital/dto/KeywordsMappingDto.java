@@ -8,6 +8,5 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class KeywordsMappingDto {
-    private Integer id;
     private String keyword;
 }

@@ -16,8 +16,9 @@ public class HospitalKeywords {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long keywordId;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false, unique = true)
-    private String keyword;
+    private Keyword keyword;
 
     @OneToMany(mappedBy = "keyword", cascade = CascadeType.ALL)
     private List<HospitalKeywordsMapping> hospitalMappings;
