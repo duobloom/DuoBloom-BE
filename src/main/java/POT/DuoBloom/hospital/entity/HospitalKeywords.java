@@ -1,4 +1,4 @@
-package POT.DuoBloom.hospital;
+package POT.DuoBloom.hospital.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -12,14 +12,12 @@ import java.util.List;
 @AllArgsConstructor
 @Entity
 public class HospitalKeywords {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long keywordId;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private Keyword keyword;
+    @Column(nullable = false, unique = true)
+    private String keyword;
 
     @OneToMany(mappedBy = "keyword", cascade = CascadeType.ALL)
     private List<HospitalKeywordsMapping> hospitalMappings;

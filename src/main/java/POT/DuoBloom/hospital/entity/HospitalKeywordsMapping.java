@@ -1,5 +1,6 @@
-package POT.DuoBloom.hospital;
+package POT.DuoBloom.hospital.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -16,7 +17,8 @@ public class HospitalKeywordsMapping {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "hospital_id", nullable = false)
+    @JsonBackReference
+    @JoinColumn(name = "hospital_id", nullable = true)
     private Hospital hospital;
 
     @ManyToOne
