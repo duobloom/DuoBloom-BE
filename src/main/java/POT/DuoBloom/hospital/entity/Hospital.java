@@ -1,5 +1,6 @@
-package POT.DuoBloom.hospital;
+package POT.DuoBloom.hospital.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -25,6 +26,7 @@ public class Hospital {
     private Long detail;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = true)
     private HospitalType type;
 
     private String address;
@@ -42,7 +44,15 @@ public class Hospital {
 
     @Column(name = "link_url")
     private String linkUrl;
-    
+
+    @JsonManagedReference
     @OneToMany(mappedBy = "hospital", cascade = CascadeType.ALL)
     private List<HospitalKeywordsMapping> keywordMappings;
+
+    @PrePersist
+    public void prePersist() {
+        if (this.type == null) {
+            this.type = HospitalType.BASIC;
+        }
+    }
 }
