@@ -2,20 +2,19 @@ package POT.DuoBloom.hospital.controller;
 
 import POT.DuoBloom.hospital.service.HospitalService;
 import POT.DuoBloom.hospital.dto.HospitalDto;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
+@Slf4j
+@RequiredArgsConstructor
+@CrossOrigin(origins = "http://localhost:3000")
 @RestController
 @RequestMapping("/api/hospitals")
 public class HospitalController {
 
     private final HospitalService hospitalService;
-
-    @Autowired
-    public HospitalController(HospitalService hospitalService) {
-        this.hospitalService = hospitalService;
-    }
 
     @GetMapping("/search")
     public List<HospitalDto> getHospitalsByLocation(
