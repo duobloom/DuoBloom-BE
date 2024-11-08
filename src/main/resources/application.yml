@@ -21,7 +21,7 @@ spring:
     timeout: 1800s
 
   redis:
-    host: localhost
+    host: 172.31.32.206
     port: 6379
     
   mail:
