@@ -39,8 +39,8 @@ public class FeedService {
         }
 
         // Emotion 조회
-        Optional<EmotionResponseDto> userEmotion = emotionService.findByFeedDateAndUsers(feedDate, user);
-        Optional<EmotionResponseDto> coupleEmotion = emotionService.findByFeedDateAndUsers(feedDate, coupleUser);
+        List<EmotionResponseDto> userEmotion = emotionService.findByFeedDateAndUsers(feedDate, user);
+        List<EmotionResponseDto> coupleEmotion = emotionService.findByFeedDateAndUsers(feedDate, coupleUser);
 
         // Board 조회
         List<BoardResponseDto> userBoards = boardService.getBoardsByDateAndUser(feedDate, user);
@@ -60,12 +60,11 @@ public class FeedService {
 
         return new FeedResponseDto(
                 feedDate,
-                userEmotion.orElse(null),
-                coupleEmotion.orElse(null),
+                userEmotion.isEmpty() ? null : userEmotion.get(0),  // Emotion이 없으면 null 반환
+                coupleEmotion.isEmpty() ? null : coupleEmotion.get(0),  // Emotion이 없으면 null 반환
                 userBoards,
                 coupleBoards,
                 questionsWithAnswers
         );
     }
-
 }

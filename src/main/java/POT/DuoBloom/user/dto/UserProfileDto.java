@@ -11,12 +11,11 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @NoArgsConstructor
 public class UserProfileDto {
-
     private String nickname;
     private String email;
     private Sex sex;
     private LocalDate birth;
     private Integer balance;
-
-
+    private Integer coupleBalance;
 }
+

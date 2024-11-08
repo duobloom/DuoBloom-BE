@@ -15,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.util.Collections;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -29,23 +30,17 @@ public class EmotionController {
     @Operation(summary = "날짜별 감정 조회", description = "지정한 날짜의 감정을 조회합니다.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "감정 조회 성공"),
-            @ApiResponse(responseCode = "401", description = "로그인이 필요합니다."),
-            @ApiResponse(responseCode = "404", description = "지정한 날짜의 감정이 존재하지 않습니다.")
+            @ApiResponse(responseCode = "401", description = "로그인이 필요합니다.")
     })
     @GetMapping("/{date}")
-    public ResponseEntity<EmotionResponseDto> getEmotionByDate(@PathVariable String date, HttpSession session) {
-        Long userId = (Long) session.getAttribute("userId");
-
-        if (userId == null) {
+    public ResponseEntity<?> getEmotionByDate(@PathVariable String date, HttpSession session) {
+        User users = getUserFromSession(session);
+        if (users == null) {
             return ResponseEntity.status(401).build();
         }
 
-        User users = userService.findById(userId);
         LocalDate localDate = LocalDate.parse(date);
-
-        return emotionService.findByFeedDateAndUsers(localDate, users)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        return ResponseEntity.ok(emotionService.findByFeedDateAndUsers(localDate, users));
     }
 
     @Operation(summary = "감정 생성", description = "오늘 날짜의 감정을 생성합니다.")
@@ -56,15 +51,12 @@ public class EmotionController {
     })
     @PostMapping
     public ResponseEntity<Void> createEmotion(@RequestBody EmotionUpdateDto emotionUpdateDto, HttpSession session) {
-        Long userId = (Long) session.getAttribute("userId");
-
-        if (userId == null) {
+        User users = getUserFromSession(session);
+        if (users == null) {
             return ResponseEntity.status(401).build();
         }
 
-        User users = userService.findById(userId);
         LocalDate date = LocalDate.now();
-
         boolean isCreated = emotionService.createEmotion(date, users, emotionUpdateDto);
 
         if (!isCreated) {
@@ -83,5 +75,14 @@ public class EmotionController {
     public ResponseEntity<Void> updateEmotion(@PathVariable Long emotionId, @RequestBody EmotionUpdateDto emotionUpdateDto) {
         emotionService.updateEmotion(emotionId, emotionUpdateDto);
         return ResponseEntity.ok().build();
+    }
+
+    private User getUserFromSession(HttpSession session) {
+        Long userId = (Long) session.getAttribute("userId");
+        if (userId == null) {
+            return null;
+        }
+
+        return userService.findById(userId);
     }
 }

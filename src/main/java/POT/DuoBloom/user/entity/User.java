@@ -74,6 +74,8 @@ public class User implements Serializable {
 
     public void setCoupleUser(User coupleUser) { this.coupleUser = coupleUser; }
 
+    public Integer getCoupleBalance() { return coupleUser != null ? coupleUser.getBalance() : 0; }
+
 
 
 }

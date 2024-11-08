@@ -78,14 +78,17 @@ public class UserService {
     public UserProfileDto getUserProfile(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("유저 아이디를 찾을 수 없음: " + userId));
+
         return new UserProfileDto(
                 user.getNickname(),
                 user.getEmail(),
                 user.getSex(),
                 user.getBirth(),
-                user.getBalance()
+                user.getBalance(),
+                user.getCoupleBalance()
         );
     }
+
 
     // 프로필 수정
     @Transactional

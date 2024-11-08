@@ -10,7 +10,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -18,14 +20,17 @@ public class EmotionService {
 
     private final EmotionRepository emotionRepository;
 
-    public Optional<EmotionResponseDto> findByFeedDateAndUsers(LocalDate feedDate, User users) {
+    public List<EmotionResponseDto> findByFeedDateAndUsers(LocalDate feedDate, User users) {
         return emotionRepository.findByFeedDateAndUsers(feedDate, users)
+                .stream()
                 .map(emotion -> new EmotionResponseDto(
                         emotion.getEmotionId(),
                         emotion.getEmoji(),
                         emotion.getFeedDate()
-                ));
+                ))
+                .collect(Collectors.toList());
     }
+
 
     @Transactional
     public boolean createEmotion(LocalDate feedDate, User users, EmotionUpdateDto emotionUpdateDto) {
