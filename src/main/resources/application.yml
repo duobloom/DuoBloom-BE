@@ -21,7 +21,7 @@ spring:
     timeout: 1800s
 
   redis:
-    host: 172.31.32.206
+    host: ${REDIS_HOST}
     port: 6379
     
   mail:
