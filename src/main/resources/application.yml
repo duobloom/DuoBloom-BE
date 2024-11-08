@@ -22,7 +22,7 @@ spring:
 
   redis:
     host: localhost
-    port: 3679
+    port: 6379
     
   mail:
     host: smtp.gmail.com
