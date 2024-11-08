@@ -72,7 +72,7 @@ jobs:
           fi
 
           # S3 환경 변수 파일 생성
-          echo "S3_ACCESS_KEY=${{ secrets.S3_ACCESS_KEY }}" > ~/.env
+          echo "S3_ACCESS_KEY=${{ secrets.S3_ACCESS_KEY }}" >> ~/.env
           echo "S3_SECRET_KEY=${{ secrets.S3_SECRET_KEY }}" >> ~/.env
           echo "S3_BUCKET_NAME=${{ secrets.S3_BUCKET_NAME }}" >> ~/.env
 
@@ -82,7 +82,7 @@ jobs:
             ${{ secrets.DOCKER_USERNAME }}/docker-test:latest
 
           # 실행 중인 컨테이너 확인
-          sudo docker ps -a --filter "name=docker-test"
+          sudo docker ps -a | grep "docker-test"
 
           # 사용하지 않는 이미지 및 컨테이너 정리
-          sudo docker system prune -af
+          sudo docker image prune -a -f
