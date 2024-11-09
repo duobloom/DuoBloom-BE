@@ -11,7 +11,7 @@ import org.springframework.data.redis.repository.configuration.EnableRedisReposi
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 @Configuration
-@EnableRedisRepositories // Redis 활성화
+@EnableRedisRepositories
 public class RedisConfig {
 
     @Value("${spring.redis.host}")

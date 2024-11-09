@@ -39,7 +39,7 @@ public class Board {
     @ElementCollection
     @CollectionTable(name = "board_photos", joinColumns = @JoinColumn(name = "board_id"))
     @Column(name = "photo_url")
-    private List<String> photoUrls = new ArrayList<>(); // 사진 URL 리스트
+    private List<String> photoUrls = new ArrayList<>();
 
     public void addPhotoUrl(String photoUrl) {
         this.photoUrls.add(photoUrl);

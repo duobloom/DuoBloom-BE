@@ -2,6 +2,7 @@ package POT.DuoBloom.user.entity;
 
 import POT.DuoBloom.board.entity.Board;
 import POT.DuoBloom.board.entity.BoardLike;
+import POT.DuoBloom.community.entity.Community;
 import POT.DuoBloom.emotion.entity.Emotion;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -70,6 +71,9 @@ public class User implements Serializable {
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Board> boards = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Community> communities = new ArrayList<>();
 
 
     public void setCoupleUser(User coupleUser) { this.coupleUser = coupleUser; }
