@@ -1,4 +1,4 @@
-package POT.DuoBloom.point.pointTransaction;
+package POT.DuoBloom.point.pointTransaction.entity;
 
 public enum TransactionType {
     CHALLENGE_REWARD,

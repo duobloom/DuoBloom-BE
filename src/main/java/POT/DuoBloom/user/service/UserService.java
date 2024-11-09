@@ -1,7 +1,7 @@
 package POT.DuoBloom.user.service;
 
 
-import POT.DuoBloom.user.UserRepository;
+import POT.DuoBloom.user.repository.UserRepository;
 import POT.DuoBloom.user.dto.PasswordDto;
 import POT.DuoBloom.user.dto.SignupUserDto;
 import POT.DuoBloom.user.dto.UserProfileDto;

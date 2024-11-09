@@ -2,7 +2,7 @@ package POT.DuoBloom.feed.controller;
 
 import POT.DuoBloom.feed.dto.FeedResponseDto;
 import POT.DuoBloom.feed.service.FeedService;
-import POT.DuoBloom.user.UserRepository;
+import POT.DuoBloom.user.repository.UserRepository;
 import POT.DuoBloom.user.entity.User;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;

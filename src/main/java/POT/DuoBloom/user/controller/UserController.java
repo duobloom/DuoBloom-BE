@@ -1,4 +1,4 @@
-package POT.DuoBloom.user;
+package POT.DuoBloom.user.controller;
 
 import POT.DuoBloom.user.dto.*;
 import POT.DuoBloom.user.service.EmailService;

@@ -1,4 +1,4 @@
-package POT.DuoBloom.user;
+package POT.DuoBloom.user.repository;
 
 import POT.DuoBloom.user.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;

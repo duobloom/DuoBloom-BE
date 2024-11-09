@@ -3,7 +3,7 @@ package POT.DuoBloom.community.controller;
 import POT.DuoBloom.community.dto.CommunityRequestDto;
 import POT.DuoBloom.community.dto.CommunityResponseDto;
 import POT.DuoBloom.community.service.CommunityService;
-import POT.DuoBloom.user.UserRepository;
+import POT.DuoBloom.user.repository.UserRepository;
 import POT.DuoBloom.user.entity.User;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;

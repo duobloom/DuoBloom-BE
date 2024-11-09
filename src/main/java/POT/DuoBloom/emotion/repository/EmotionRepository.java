@@ -1,4 +1,4 @@
-package POT.DuoBloom.emotion;
+package POT.DuoBloom.emotion.repository;
 
 import POT.DuoBloom.emotion.entity.Emotion;
 import POT.DuoBloom.user.entity.User;
