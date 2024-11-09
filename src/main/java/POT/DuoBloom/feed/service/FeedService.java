@@ -7,7 +7,7 @@ import POT.DuoBloom.emotion.service.EmotionService;
 import POT.DuoBloom.feed.dto.FeedResponseDto;
 import POT.DuoBloom.question.service.QuestionService;
 import POT.DuoBloom.question.dto.QuestionWithAnswersDto;
-import POT.DuoBloom.user.UserRepository;
+import POT.DuoBloom.user.repository.UserRepository;
 import POT.DuoBloom.user.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -15,7 +15,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service

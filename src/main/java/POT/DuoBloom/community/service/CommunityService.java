@@ -6,7 +6,7 @@ import POT.DuoBloom.community.entity.Community;
 import POT.DuoBloom.community.entity.CommunityLike;
 import POT.DuoBloom.community.repository.CommunityLikeRepository;
 import POT.DuoBloom.community.repository.CommunityRepository;
-import POT.DuoBloom.user.UserRepository;
+import POT.DuoBloom.user.repository.UserRepository;
 import POT.DuoBloom.user.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

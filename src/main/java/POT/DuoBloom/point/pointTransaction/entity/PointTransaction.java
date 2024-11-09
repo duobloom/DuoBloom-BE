@@ -1,4 +1,4 @@
-package POT.DuoBloom.point.pointTransaction;
+package POT.DuoBloom.point.pointTransaction.entity;
 
 import POT.DuoBloom.user.entity.User;
 import jakarta.persistence.*;

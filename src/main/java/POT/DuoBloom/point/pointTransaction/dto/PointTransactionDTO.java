@@ -1,6 +1,6 @@
 package POT.DuoBloom.point.pointTransaction.dto;
 
-import POT.DuoBloom.point.pointTransaction.TransactionType;
+import POT.DuoBloom.point.pointTransaction.entity.TransactionType;
 import lombok.Builder;
 import lombok.Getter;
 

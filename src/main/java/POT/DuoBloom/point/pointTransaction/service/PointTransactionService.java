@@ -1,8 +1,11 @@
-package POT.DuoBloom.point.pointTransaction;
+package POT.DuoBloom.point.pointTransaction.service;
 
 import POT.DuoBloom.point.pointTransaction.dto.PointTransactionDTO;
 import POT.DuoBloom.point.pointTransaction.dto.PointTransactionMapper;
-import POT.DuoBloom.user.UserRepository;
+import POT.DuoBloom.point.pointTransaction.entity.PointTransaction;
+import POT.DuoBloom.point.pointTransaction.entity.TransactionType;
+import POT.DuoBloom.point.pointTransaction.repository.PointTransactionRepository;
+import POT.DuoBloom.user.repository.UserRepository;
 import POT.DuoBloom.user.entity.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

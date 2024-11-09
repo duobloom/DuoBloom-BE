@@ -1,6 +1,5 @@
-package POT.DuoBloom.emotion;
+package POT.DuoBloom.emotion.controller;
 
-import POT.DuoBloom.emotion.dto.EmotionResponseDto;
 import POT.DuoBloom.emotion.dto.EmotionUpdateDto;
 import POT.DuoBloom.emotion.service.EmotionService;
 import POT.DuoBloom.user.entity.User;
@@ -15,7 +14,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
-import java.util.Collections;
 
 @Slf4j
 @RequiredArgsConstructor

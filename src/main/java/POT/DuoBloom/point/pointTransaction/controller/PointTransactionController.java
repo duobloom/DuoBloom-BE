@@ -1,8 +1,7 @@
-package POT.DuoBloom.point.pointTransaction;
+package POT.DuoBloom.point.pointTransaction.controller;
 
+import POT.DuoBloom.point.pointTransaction.service.PointTransactionService;
 import POT.DuoBloom.point.pointTransaction.dto.PointTransactionDTO;
-import POT.DuoBloom.user.entity.User;
-import POT.DuoBloom.user.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;

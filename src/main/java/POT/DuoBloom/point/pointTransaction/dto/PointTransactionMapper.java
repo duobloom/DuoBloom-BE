@@ -1,6 +1,6 @@
 package POT.DuoBloom.point.pointTransaction.dto;
 
-import POT.DuoBloom.point.pointTransaction.PointTransaction;
+import POT.DuoBloom.point.pointTransaction.entity.PointTransaction;
 
 public class PointTransactionMapper {
 
