@@ -1,5 +1,6 @@
 package POT.DuoBloom.hospital.controller;
 
+import POT.DuoBloom.hospital.entity.Keyword;
 import POT.DuoBloom.hospital.service.HospitalService;
 import POT.DuoBloom.hospital.dto.HospitalDto;
 import lombok.RequiredArgsConstructor;
@@ -17,10 +18,16 @@ public class HospitalController {
     private final HospitalService hospitalService;
 
     @GetMapping("/search")
-    public List<HospitalDto> getHospitalsByLocation(
+    public List<HospitalDto> getHospitalsByLocationAndKeyword(
             @RequestParam(value = "region", required = false) Long region,
             @RequestParam(value = "middle", required = false) Long middle,
-            @RequestParam(value = "detail", required = false) Long detail) {
+            @RequestParam(value = "detail", required = false) Long detail,
+            @RequestParam(value = "keyword", required = false) Keyword keyword) {
+
+        if (keyword != null) {
+            return hospitalService.findHospitalsByLocationAndKeyword(region, keyword);
+        }
+
         return hospitalService.findHospitalsByLocation(region, middle, detail);
     }
 }

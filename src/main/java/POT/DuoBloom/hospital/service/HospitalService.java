@@ -3,6 +3,7 @@ package POT.DuoBloom.hospital.service;
 import POT.DuoBloom.hospital.dto.HospitalDto;
 import POT.DuoBloom.hospital.dto.KeywordsMappingDto;
 import POT.DuoBloom.hospital.entity.Hospital;
+import POT.DuoBloom.hospital.entity.Keyword;
 import POT.DuoBloom.hospital.repository.HospitalRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -16,6 +17,8 @@ public class HospitalService {
 
     private final HospitalRepository hospitalRepository;
 
+
+    // 지역에 따라 병원 조회
     public List<HospitalDto> findHospitalsByLocation(Long region, Long middle, Long detail) {
         List<Hospital> hospitals;
         if (detail != null) {
@@ -29,6 +32,26 @@ public class HospitalService {
         }
         return hospitals.stream().map(this::convertToDto).collect(Collectors.toList());
     }
+
+
+    // 지역과 키워드에 따라 병원 조회
+    public List<HospitalDto> findHospitalsByLocationAndKeyword(Long region, Keyword keyword) {
+        List<Hospital> hospitals;
+
+        if (region != null && keyword != null) {
+            hospitals = hospitalRepository.findByRegionAndKeywordMappings_Keyword_Keyword(region, keyword);
+        } else if (keyword != null) {
+            hospitals = hospitalRepository.findByKeywordMappings_Keyword_Keyword(keyword);
+        } else if (region != null) {
+            hospitals = hospitalRepository.findByRegion(region);
+        } else {
+            hospitals = hospitalRepository.findAll();
+        }
+
+        return hospitals.stream().map(this::convertToDto).collect(Collectors.toList());
+    }
+
+
 
     public HospitalDto convertToDto(Hospital hospital) {
         HospitalDto hospitalDto = new HospitalDto();
