@@ -11,10 +11,12 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CommunityResponseDto {
-    private Integer communityId;
+    private Long communityId;
     private String content;
     private Type type;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private boolean isOwner;
+    private long likeCount;
+    private boolean isLikedByUser;
 }

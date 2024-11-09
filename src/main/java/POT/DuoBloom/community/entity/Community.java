@@ -18,7 +18,7 @@ public class Community {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer communityId;
+    private Long communityId;
 
     @Column(nullable = false)
     private String content;

@@ -65,7 +65,7 @@ public class CommunityController {
     })
     @PutMapping("/{communityId}")
     public ResponseEntity<CommunityResponseDto> updateCommunity(
-            @PathVariable Integer communityId,
+            @PathVariable Long communityId,
             @RequestBody CommunityRequestDto requestDto,
             @SessionAttribute(name = "userId", required = false) Long userId,
             HttpSession session) {
@@ -88,7 +88,7 @@ public class CommunityController {
     })
     @DeleteMapping("/{communityId}")
     public ResponseEntity<Void> deleteCommunity(
-            @PathVariable Integer communityId,
+            @PathVariable Long communityId,
             @SessionAttribute(name = "userId", required = false) Long userId,
             HttpSession session) {
 
@@ -100,6 +100,28 @@ public class CommunityController {
 
         communityService.deleteCommunity(communityId, user.getUserId());
         return ResponseEntity.noContent().build();
+    }
+
+    @Operation(summary = "커뮤니티 게시글 좋아요 토글", description = "특정 커뮤니티 게시글에 좋아요를 누르거나 취소합니다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "좋아요 토글 성공"),
+            @ApiResponse(responseCode = "401", description = "로그인이 필요합니다."),
+            @ApiResponse(responseCode = "404", description = "게시글 또는 사용자를 찾을 수 없습니다.")
+    })
+    @PostMapping("/{communityId}/like")
+    public ResponseEntity<Void> toggleLike(
+            @PathVariable Long communityId,
+            @SessionAttribute(name = "userId", required = false) Long userId,
+            HttpSession session) {
+
+        if (userId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        User user = getUserFromSessionOrDb(userId, session);
+
+        communityService.toggleLike(communityId, user.getUserId());
+        return ResponseEntity.ok().build();
     }
 
     private User getUserFromSessionOrDb(Long userId, HttpSession session) {
