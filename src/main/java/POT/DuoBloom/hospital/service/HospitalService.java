@@ -3,6 +3,7 @@ package POT.DuoBloom.hospital.service;
 import POT.DuoBloom.hospital.dto.HospitalDto;
 import POT.DuoBloom.hospital.dto.KeywordsMappingDto;
 import POT.DuoBloom.hospital.entity.Hospital;
+import POT.DuoBloom.hospital.entity.HospitalType;
 import POT.DuoBloom.hospital.entity.Keyword;
 import POT.DuoBloom.hospital.repository.HospitalRepository;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +20,7 @@ public class HospitalService {
 
 
     // 지역에 따라 병원 조회
+
     public List<HospitalDto> findHospitalsByLocation(Long region, Long middle, Long detail) {
         List<Hospital> hospitals;
         if (detail != null) {
@@ -33,12 +35,19 @@ public class HospitalService {
         return hospitals.stream().map(this::convertToDto).collect(Collectors.toList());
     }
 
-
-    // 지역과 키워드에 따라 병원 조회
-    public List<HospitalDto> findHospitalsByLocationAndKeyword(Long region, Keyword keyword) {
+    // 지역, 키워드, 타입에 따라 병원 조회
+    public List<HospitalDto> findHospitalsByFilters(Long region, Keyword keyword, HospitalType type) {
         List<Hospital> hospitals;
 
-        if (region != null && keyword != null) {
+        if (region != null && keyword != null && type != null) {
+            hospitals = hospitalRepository.findByRegionAndKeywordMappings_Keyword_KeywordAndType(region, keyword, type);
+        } else if (region != null && type != null) {
+            hospitals = hospitalRepository.findByRegionAndType(region, type);
+        } else if (keyword != null && type != null) {
+            hospitals = hospitalRepository.findByKeywordMappings_Keyword_KeywordAndType(keyword, type);
+        } else if (type != null) {
+            hospitals = hospitalRepository.findByType(type);
+        } else if (region != null && keyword != null) {
             hospitals = hospitalRepository.findByRegionAndKeywordMappings_Keyword_Keyword(region, keyword);
         } else if (keyword != null) {
             hospitals = hospitalRepository.findByKeywordMappings_Keyword_Keyword(keyword);
