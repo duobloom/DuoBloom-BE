@@ -3,6 +3,7 @@ package POT.DuoBloom.user.entity;
 import POT.DuoBloom.board.entity.Board;
 import POT.DuoBloom.board.entity.BoardLike;
 import POT.DuoBloom.community.entity.Community;
+import POT.DuoBloom.community.entity.CommunityLike;
 import POT.DuoBloom.emotion.entity.Emotion;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -48,6 +49,8 @@ public class User implements Serializable {
     @JoinColumn(name = "couple_user_id")
     private User coupleUser;
 
+    // 필요한 메소드
+
     public void updateUserId(Long userId) { this.userId = userId; } // 테스트용
     public void updateNickName(String nickname) { this.nickname = nickname; }
     public void updateEmail(String email) { this.email = email; }
@@ -63,6 +66,13 @@ public class User implements Serializable {
     }
     public void updateSex(Sex sex) { this.sex = sex; }
 
+    public Integer getCoupleBalance() { return coupleUser != null ? coupleUser.getBalance() : 0; }
+
+    public void setCoupleUser(User coupleUser) { this.coupleUser = coupleUser; } // test 용
+
+
+    // 엔티티 매핑
+
     @OneToMany(mappedBy = "users", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Emotion> emotions = new ArrayList<>();
 
@@ -75,10 +85,10 @@ public class User implements Serializable {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Community> communities = new ArrayList<>();
 
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<CommunityLike> communityLikes = new ArrayList<>();
 
-    public void setCoupleUser(User coupleUser) { this.coupleUser = coupleUser; }
 
-    public Integer getCoupleBalance() { return coupleUser != null ? coupleUser.getBalance() : 0; }
 
 
 
