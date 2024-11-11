@@ -12,10 +12,9 @@ public class AnswerMapper {
     public AnswerDto toDto(Answer answer) {
         return new AnswerDto(
                 answer.getAnswerId(),
-                answer.getUser().getUserId(),
                 answer.getQuestion().getQuestionId(),
                 answer.getContent(),
-                answer.getFeedDate() // feedDate로 수정
+                answer.getFeedDate()
         );
     }
 

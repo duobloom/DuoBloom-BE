@@ -8,8 +8,7 @@ import java.time.LocalDate;
 @AllArgsConstructor
 public class AnswerDto {
     private Long answerId;
-    private Long userId;
     private Long questionId;
     private String content;
-    private LocalDate feedDate; // feedDate로 수정
+    private LocalDate feedDate;
 }
