@@ -45,6 +45,8 @@ public class User implements Serializable {
 
     private Integer balance;
 
+    private String region;
+
     @OneToOne
     @JoinColumn(name = "couple_user_id")
     private User coupleUser;
@@ -56,20 +58,21 @@ public class User implements Serializable {
     public void updateNickName(String nickname) { this.nickname = nickname; }
     public void updateEmail(String email) { this.email = email; }
     public void updatePassword(String password) { this.password = password; }
-    public void updateBirth(LocalDate birth) {
-        this.birth = birth;
-    }
+    public void updateBirth(LocalDate birth) { this.birth = birth; }
+    public void updateSex(Sex sex) { this.sex = sex; }
+    public void updateRegion(String region) { this.region = region; }
+
     public void updateBalance(int amount) {
         if (this.balance == null) {
             this.balance = 0;
         }
         this.balance += amount;
     }
-    public void updateSex(Sex sex) { this.sex = sex; }
 
     public Integer getCoupleBalance() { return coupleUser != null ? coupleUser.getBalance() : 0; }
 
-    public void setCoupleUser(User coupleUser) { this.coupleUser = coupleUser; } // test 용
+    // test 용
+    public void setCoupleUser(User coupleUser) { this.coupleUser = coupleUser; }
 
 
     // 엔티티 매핑
@@ -88,8 +91,6 @@ public class User implements Serializable {
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<CommunityLike> communityLikes = new ArrayList<>();
-
-
 
 
 

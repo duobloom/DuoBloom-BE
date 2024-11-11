@@ -12,7 +12,6 @@ import java.util.List;
 @AllArgsConstructor
 public class BoardResponseDto {
     private Integer boardId;
-    private String title;
     private String content;
     private LocalDateTime updatedAt;
     private List<String> photoUrls;

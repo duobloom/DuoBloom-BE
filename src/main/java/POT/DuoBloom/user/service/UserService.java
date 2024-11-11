@@ -85,7 +85,8 @@ public class UserService {
                 user.getBirth(),
                 user.getBalance(),
                 user.getCoupleBalance(),
-                user.getProfilePictureUrl()
+                user.getProfilePictureUrl(),
+                user.getRegion()
         );
     }
 
@@ -99,7 +100,9 @@ public class UserService {
         user.updateNickName(userProfileEditDto.getNickname());
         user.updateBirth(userProfileEditDto.getBirth());
         user.updateProfilePictureUrl(userProfileEditDto.getProfilePictureUrl());
+        user.updateRegion(userProfileEditDto.getRegion());
     }
+
 
 
     // 현재 비밀번호 확인

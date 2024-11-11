@@ -10,5 +10,5 @@ import org.springframework.stereotype.Repository;
 public interface BoardLikeRepository extends JpaRepository<BoardLike, Long> {
     boolean existsByUserAndBoard(User user, Board board);
     void deleteByUserAndBoard(User user, Board board);
-    int countByBoard(Board board); // 좋아요 수 계산 메서드 추가
+    int countByBoard(Board board);
 }

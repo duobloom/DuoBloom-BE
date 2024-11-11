@@ -18,5 +18,6 @@ public class UserProfileDto {
     private Integer balance;
     private Integer coupleBalance;
     private String profilePictureUrl;
+    private String region;
 }
 

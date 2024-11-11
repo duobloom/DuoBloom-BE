@@ -35,11 +35,11 @@ public class BoardService {
 
     // 글 작성
     @Transactional
-    public Board createBoard(User user, String title, String content, List<String> photoUrls) {
+    public Board createBoard(User user, String content, List<String> photoUrls) {
         if (!canAccessBoard(user)) {
             throw new IllegalStateException("커플인 경우에만 커뮤니티에 글을 작성할 수 있습니다.");
         }
-        Board board = new Board(user, title, content, LocalDateTime.now());
+        Board board = new Board(user, content, LocalDateTime.now());
 
         if (photoUrls != null) {
             photoUrls.forEach(board::addPhotoUrl);
@@ -58,7 +58,6 @@ public class BoardService {
 
                     return new BoardResponseDto(
                             board.getBoardId(),
-                            board.getTitle(),
                             board.getContent(),
                             board.getUpdatedAt(),
                             board.getPhotoUrls(),
@@ -86,10 +85,9 @@ public class BoardService {
 
         return new BoardResponseDto(
                 board.getBoardId(),
-                board.getTitle(),
                 board.getContent(),
                 board.getUpdatedAt(),
-                board.getPhotoUrls(), // 추가된 필드
+                board.getPhotoUrls(),
                 commentDtos,
                 likeCount,
                 comments.size()
@@ -108,7 +106,6 @@ public class BoardService {
 
                     return new BoardResponseDto(
                             board.getBoardId(),
-                            board.getTitle(),
                             board.getContent(),
                             board.getUpdatedAt(),
                             board.getPhotoUrls(),
@@ -124,7 +121,7 @@ public class BoardService {
 
     // 글 수정
     @Transactional
-    public Board updateBoard(User user, Integer boardId, String title, String content) {
+    public Board updateBoard(User user, Integer boardId, String content) {
         if (!canAccessBoard(user)) {
             throw new IllegalStateException("커플인 경우에만 커뮤니티 글을 수정할 수 있습니다.");
         }
@@ -136,7 +133,6 @@ public class BoardService {
             throw new IllegalStateException("해당 글의 작성자만 수정할 수 있습니다.");
         }
 
-        board.updateTitle(title);
         board.updateContent(content);
         board.updateUpdatedAt(LocalDateTime.now());
         return boardRepository.save(board);
