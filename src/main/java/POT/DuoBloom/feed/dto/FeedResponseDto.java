@@ -12,7 +12,8 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 public class FeedResponseDto {
-    private LocalDate feedDate; // feedDate로 수정
+    
+    private LocalDate feedDate;
     private EmotionResponseDto userEmotion;
     private EmotionResponseDto coupleEmotion;
     private List<BoardResponseDto> userBoards;
