@@ -27,7 +27,7 @@ public class HospitalController {
             @RequestParam(value = "detail", required = false) Long detail,
             @RequestParam(value = "keyword", required = false) Keyword keyword,
             @RequestParam(value = "type", required = false) HospitalType type) {
-        return hospitalService.findHospitalsByFilters(region, keyword, type);
+        return hospitalService.findHospitalsByFilters(region, middle, detail, keyword, type);
     }
 
     @GetMapping("/{hospitalId}")
