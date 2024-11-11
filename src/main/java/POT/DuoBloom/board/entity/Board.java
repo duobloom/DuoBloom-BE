@@ -32,6 +32,12 @@ public class Board {
 
     private LocalDateTime updatedAt;
 
+    @PrePersist
+    @PreUpdate
+    private void onPrePersistOrUpdate() {
+        this.updatedAt = LocalDateTime.now();
+    }
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;

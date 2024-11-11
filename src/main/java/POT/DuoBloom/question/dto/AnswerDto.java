@@ -7,8 +7,6 @@ import java.time.LocalDate;
 @Data
 @AllArgsConstructor
 public class AnswerDto {
-    private Long answerId;
     private Long questionId;
     private String content;
-    private LocalDate feedDate;
 }
