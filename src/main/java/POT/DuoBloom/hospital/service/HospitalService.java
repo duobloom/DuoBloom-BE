@@ -1,6 +1,7 @@
 package POT.DuoBloom.hospital.service;
 
 import POT.DuoBloom.hospital.dto.HospitalDto;
+import POT.DuoBloom.hospital.dto.HospitalListDto;
 import POT.DuoBloom.hospital.dto.KeywordsMappingDto;
 import POT.DuoBloom.hospital.entity.Hospital;
 import POT.DuoBloom.hospital.entity.HospitalType;
@@ -18,25 +19,8 @@ public class HospitalService {
 
     private final HospitalRepository hospitalRepository;
 
-
-    // 지역에 따라 병원 조회
-
-    public List<HospitalDto> findHospitalsByLocation(Long region, Long middle, Long detail) {
-        List<Hospital> hospitals;
-        if (detail != null) {
-            hospitals = hospitalRepository.findByDetail(detail);
-        } else if (middle != null) {
-            hospitals = hospitalRepository.findByMiddle(middle);
-        } else if (region != null) {
-            hospitals = hospitalRepository.findByRegion(region);
-        } else {
-            hospitals = hospitalRepository.findAll();
-        }
-        return hospitals.stream().map(this::convertToDto).collect(Collectors.toList());
-    }
-
-    // 지역, 키워드, 타입에 따라 병원 조회
-    public List<HospitalDto> findHospitalsByFilters(Long region, Keyword keyword, HospitalType type) {
+    // 병원 리스트 조회
+    public List<HospitalListDto> findHospitalsByFilters(Long region, Keyword keyword, HospitalType type) {
         List<Hospital> hospitals;
 
         if (region != null && keyword != null && type != null) {
@@ -57,10 +41,36 @@ public class HospitalService {
             hospitals = hospitalRepository.findAll();
         }
 
-        return hospitals.stream().map(this::convertToDto).collect(Collectors.toList());
+        return hospitals.stream().map(this::convertToListDto).collect(Collectors.toList());
     }
 
+    public HospitalListDto convertToListDto(Hospital hospital) {
+        HospitalListDto hospitalListDto = new HospitalListDto();
+        hospitalListDto.setHospitalId(hospital.getHospitalId());
+        hospitalListDto.setHospitalName(hospital.getHospitalName());
+        hospitalListDto.setRegion(hospital.getRegion());
+        hospitalListDto.setMiddle(hospital.getMiddle());
+        hospitalListDto.setDetail(hospital.getDetail());
+        hospitalListDto.setType(hospital.getType() != null ? hospital.getType().toString() : null);
+        hospitalListDto.setLatitude(hospital.getLatitude());
+        hospitalListDto.setLongitude(hospital.getLongitude());
+        hospitalListDto.setTime(hospital.getTime());
 
+        List<KeywordsMappingDto> keywordMappings = hospital.getKeywordMappings().stream()
+                .map(mapping -> new KeywordsMappingDto(
+                        mapping.getKeyword() != null ? mapping.getKeyword().getKeyword().toString() : null))
+                .collect(Collectors.toList());
+        hospitalListDto.setKeywordMappings(keywordMappings);
+
+        return hospitalListDto;
+    }
+
+    // 단일 병원 조회 시 전체 정보 제공
+    public HospitalDto getHospitalById(Integer hospitalId) {
+        Hospital hospital = hospitalRepository.findById(hospitalId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 병원이 없습니다: " + hospitalId));
+        return convertToDto(hospital);
+    }
 
     public HospitalDto convertToDto(Hospital hospital) {
         HospitalDto hospitalDto = new HospitalDto();
@@ -83,9 +93,8 @@ public class HospitalService {
                 .map(mapping -> new KeywordsMappingDto(
                         mapping.getKeyword() != null ? mapping.getKeyword().getKeyword().toString() : null))
                 .collect(Collectors.toList());
-
         hospitalDto.setKeywordMappings(keywordMappings);
+
         return hospitalDto;
     }
-
 }

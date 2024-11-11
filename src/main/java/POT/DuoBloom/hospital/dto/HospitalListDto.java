@@ -9,20 +9,15 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class HospitalDto {
+public class HospitalListDto {
     private Integer hospitalId;
     private String hospitalName;
     private Long region;
     private Long middle;
     private Long detail;
     private String type;
-    private String address;
-    private String phone;
-    private String time;
-    private String hospitalInfo;
-    private String staffInfo;
+    private List<KeywordsMappingDto> keywordMappings;
     private Double latitude;
     private Double longitude;
-    private String linkUrl;
-    private List<KeywordsMappingDto> keywordMappings;
+    private String time;
 }
