@@ -13,5 +13,6 @@ public class UserProfileEditDto {
 
     private String nickname;
     private LocalDate birth;
+    private String profilePictureUrl;
 
 }

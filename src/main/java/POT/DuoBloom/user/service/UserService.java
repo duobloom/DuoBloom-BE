@@ -42,8 +42,7 @@ public class UserService {
         user.updateBirth(signupUserDto.getBirth());
         user.updateSex(signupUserDto.getSex());
 
-        // balance를 초기값 0으로 설정
-        user.updateBalance(0);
+        user.updateBalance(0); // 포인트 잔액 초기값
 
         String encodedPassword = passwordEncoder.encode(signupUserDto.getPassword());
         user.updatePassword(encodedPassword);
@@ -97,7 +96,10 @@ public class UserService {
                 .orElseThrow(() -> new IllegalArgumentException("유저 아이디를 찾을 수 없음: " + userId));
 
         user.updateNickName(userProfileEditDto.getNickname());
+        user.updateBirth(userProfileEditDto.getBirth());
+        user.updateProfilePictureUrl(userProfileEditDto.getProfilePictureUrl());
     }
+
 
     // 현재 비밀번호 확인
     @Transactional(readOnly = true)
