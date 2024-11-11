@@ -14,7 +14,6 @@ import POT.DuoBloom.region.repository.DetailRepository;
 import POT.DuoBloom.region.repository.MiddleRepository;
 import POT.DuoBloom.region.repository.RegionRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -29,13 +28,15 @@ public class HospitalService {
     private final MiddleRepository middleRepository;
     private final DetailRepository detailRepository;
 
+
+    // 병원 필터링
     public List<HospitalListDto> findHospitalsByFilters(Long region, Long middle, Long detail, Keyword keyword, HospitalType type) {
         List<Hospital> hospitals = hospitalRepository.findHospitalsByFilters(region, middle, detail, keyword, type);
         return hospitals.stream().map(this::convertToListDto).collect(Collectors.toList());
     }
 
 
-    // 단일 병원 조회 시 전체 정보 제공
+    // 단일 병원 조회
     public HospitalDto getHospitalById(Integer hospitalId) {
         Hospital hospital = hospitalRepository.findById(hospitalId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 병원이 없습니다: " + hospitalId));

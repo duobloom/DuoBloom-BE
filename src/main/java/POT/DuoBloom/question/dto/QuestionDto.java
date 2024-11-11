@@ -12,7 +12,7 @@ import java.util.List;
 @AllArgsConstructor
 public class QuestionDto {
     private Long questionId;
-    private LocalDate feedDate; // feedDate로 수정
+    private LocalDate feedDate;
     private String content;
     private String myAnswerStatus;
     private String coupleAnswerStatus;
