@@ -7,6 +7,12 @@ import POT.DuoBloom.hospital.entity.Hospital;
 import POT.DuoBloom.hospital.entity.HospitalType;
 import POT.DuoBloom.hospital.entity.Keyword;
 import POT.DuoBloom.hospital.repository.HospitalRepository;
+import POT.DuoBloom.region.entity.Detail;
+import POT.DuoBloom.region.entity.Middle;
+import POT.DuoBloom.region.entity.Region;
+import POT.DuoBloom.region.repository.DetailRepository;
+import POT.DuoBloom.region.repository.MiddleRepository;
+import POT.DuoBloom.region.repository.RegionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -18,6 +24,9 @@ import java.util.stream.Collectors;
 public class HospitalService {
 
     private final HospitalRepository hospitalRepository;
+    private final RegionRepository regionRepository;
+    private final MiddleRepository middleRepository;
+    private final DetailRepository detailRepository;
 
     // 병원 리스트 조회
     public List<HospitalListDto> findHospitalsByFilters(Long region, Keyword keyword, HospitalType type) {
@@ -44,13 +53,27 @@ public class HospitalService {
         return hospitals.stream().map(this::convertToListDto).collect(Collectors.toList());
     }
 
+    private String getRegionName(Long code) {
+        Region region = regionRepository.findByRegionCode(code);
+        return region != null ? region.getName() : null;
+    }
+    private String getMiddleName(Long code) {
+        Middle middle = middleRepository.findByMiddleCode(code);
+        return middle != null ? middle.getName() : null;
+    }
+
+    private String getDetailName(Long code) {
+        Detail detail = detailRepository.findByDetailCode(code);
+        return detail != null ? detail.getName() : null;
+    }
+
     public HospitalListDto convertToListDto(Hospital hospital) {
         HospitalListDto hospitalListDto = new HospitalListDto();
         hospitalListDto.setHospitalId(hospital.getHospitalId());
         hospitalListDto.setHospitalName(hospital.getHospitalName());
-        hospitalListDto.setRegion(hospital.getRegion());
-        hospitalListDto.setMiddle(hospital.getMiddle());
-        hospitalListDto.setDetail(hospital.getDetail());
+        hospitalListDto.setRegion(getRegionName(hospital.getRegion()));
+        hospitalListDto.setMiddle(getMiddleName(hospital.getMiddle()));
+        hospitalListDto.setDetail(getDetailName(hospital.getDetail()));
         hospitalListDto.setType(hospital.getType() != null ? hospital.getType().toString() : null);
         hospitalListDto.setLatitude(hospital.getLatitude());
         hospitalListDto.setLongitude(hospital.getLongitude());
@@ -72,13 +95,14 @@ public class HospitalService {
         return convertToDto(hospital);
     }
 
+
     public HospitalDto convertToDto(Hospital hospital) {
         HospitalDto hospitalDto = new HospitalDto();
         hospitalDto.setHospitalId(hospital.getHospitalId());
         hospitalDto.setHospitalName(hospital.getHospitalName());
-        hospitalDto.setRegion(hospital.getRegion());
-        hospitalDto.setMiddle(hospital.getMiddle());
-        hospitalDto.setDetail(hospital.getDetail());
+        hospitalDto.setRegion(getRegionName(hospital.getRegion()));
+        hospitalDto.setMiddle(getMiddleName(hospital.getMiddle()));
+        hospitalDto.setDetail(getDetailName(hospital.getDetail()));
         hospitalDto.setType(hospital.getType() != null ? hospital.getType().toString() : null);
         hospitalDto.setAddress(hospital.getAddress());
         hospitalDto.setPhone(hospital.getPhone());

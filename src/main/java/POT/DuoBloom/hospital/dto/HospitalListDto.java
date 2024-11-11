@@ -12,9 +12,9 @@ import java.util.List;
 public class HospitalListDto {
     private Integer hospitalId;
     private String hospitalName;
-    private Long region;
-    private Long middle;
-    private Long detail;
+    private String region;
+    private String middle;
+    private String detail;
     private String type;
     private List<KeywordsMappingDto> keywordMappings;
     private Double latitude;
