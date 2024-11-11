@@ -17,5 +17,6 @@ public class UserProfileDto {
     private LocalDate birth;
     private Integer balance;
     private Integer coupleBalance;
+    private String profilePictureUrl;
 }
 

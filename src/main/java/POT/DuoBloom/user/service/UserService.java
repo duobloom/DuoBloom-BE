@@ -84,7 +84,8 @@ public class UserService {
                 user.getSex(),
                 user.getBirth(),
                 user.getBalance(),
-                user.getCoupleBalance()
+                user.getCoupleBalance(),
+                user.getProfilePictureUrl()
         );
     }
 
