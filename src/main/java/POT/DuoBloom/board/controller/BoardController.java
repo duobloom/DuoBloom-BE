@@ -75,9 +75,9 @@ public class BoardController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
-        Board board = boardService.createBoard(user, boardRequestDTO.getTitle(), boardRequestDTO.getContent(), boardRequestDTO.getPhotoUrls());
+        Board board = boardService.createBoard(user, boardRequestDTO.getContent(), boardRequestDTO.getPhotoUrls());
         BoardResponseDto responseDTO = new BoardResponseDto(
-                board.getBoardId(), board.getTitle(), board.getContent(),
+                board.getBoardId(), board.getContent(),
                 board.getUpdatedAt(), board.getPhotoUrls(), null, 0, 0
         );
         return ResponseEntity.ok(responseDTO);
@@ -101,9 +101,9 @@ public class BoardController {
         if (!boardService.canAccessBoard(user)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
-        Board board = boardService.updateBoard(user, boardId, boardRequestDTO.getTitle(), boardRequestDTO.getContent());
+        Board board = boardService.updateBoard(user, boardId, boardRequestDTO.getContent());
         BoardResponseDto responseDTO = new BoardResponseDto(
-                board.getBoardId(), board.getTitle(), board.getContent(),
+                board.getBoardId(), board.getContent(),
                 board.getUpdatedAt(), board.getPhotoUrls(), null, 0, 0
         );
         return ResponseEntity.ok(responseDTO);

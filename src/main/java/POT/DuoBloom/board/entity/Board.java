@@ -23,8 +23,6 @@ public class Board {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer boardId;
 
-    private String title;
-
     private String content;
 
     @Column(name = "feed_date", nullable = false)
@@ -51,16 +49,11 @@ public class Board {
         this.photoUrls.add(photoUrl);
     }
 
-    public Board(User user, String title, String content, LocalDateTime updatedAt) {
+    public Board(User user, String content, LocalDateTime updatedAt) {
         this.user = user;
-        this.title = title;
         this.content = content;
         this.updatedAt = updatedAt != null ? updatedAt : LocalDateTime.now();
         this.feedDate = this.updatedAt.toLocalDate();
-    }
-
-    public void updateTitle(String title) {
-        this.title = title;
     }
 
     public void updateContent(String content) {

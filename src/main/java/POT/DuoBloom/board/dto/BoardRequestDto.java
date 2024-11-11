@@ -11,7 +11,6 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class BoardRequestDto {
-    private String title;
     private String content;
     private List<String> photoUrls;
 }
