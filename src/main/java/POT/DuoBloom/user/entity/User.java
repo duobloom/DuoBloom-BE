@@ -41,7 +41,7 @@ public class User implements Serializable {
     private Sex sex;
 
     @Column(nullable = false)
-    private LocalDate birth; // String 으로 수정 8자리로
+    private LocalDate birth;
 
     private Integer balance;
 
@@ -49,8 +49,9 @@ public class User implements Serializable {
     @JoinColumn(name = "couple_user_id")
     private User coupleUser;
 
-    // 필요한 메소드
+    private String profilePictureUrl;
 
+    public void updateProfilePictureUrl(String profilePictureUrl) { this.profilePictureUrl = profilePictureUrl; }
     public void updateUserId(Long userId) { this.userId = userId; } // 테스트용
     public void updateNickName(String nickname) { this.nickname = nickname; }
     public void updateEmail(String email) { this.email = email; }

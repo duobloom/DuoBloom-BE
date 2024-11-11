@@ -122,8 +122,6 @@ public class UserController {
         try {
             userService.updateUserProfile(userId, userProfileEditDto);
             return ResponseEntity.ok("프로필 수정이 완료되었습니다.");
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(400).body(e.getMessage());
         } catch (Exception e) {
             log.error("Unexpected error during profile update", e);
             return ResponseEntity.status(500).body("서버 에러 발생. 나중에 다시 시도해주세요.");
