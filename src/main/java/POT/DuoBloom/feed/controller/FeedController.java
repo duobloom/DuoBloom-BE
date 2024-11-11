@@ -40,7 +40,6 @@ public class FeedController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        // 세션에서 user를 가져오거나 없으면 userId로 DB에서 조회 후 세션에 저장
         User user = (User) session.getAttribute("user");
         if (user == null) {
             user = userRepository.findById(userId)

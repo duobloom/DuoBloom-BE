@@ -7,7 +7,6 @@ import POT.DuoBloom.hospital.entity.Hospital;
 import POT.DuoBloom.hospital.entity.HospitalType;
 import POT.DuoBloom.hospital.entity.Keyword;
 import POT.DuoBloom.hospital.repository.HospitalRepository;
-import POT.DuoBloom.hospital.specification.HospitalSpecifications;
 import POT.DuoBloom.region.entity.Detail;
 import POT.DuoBloom.region.entity.Middle;
 import POT.DuoBloom.region.entity.Region;
@@ -15,7 +14,6 @@ import POT.DuoBloom.region.repository.DetailRepository;
 import POT.DuoBloom.region.repository.MiddleRepository;
 import POT.DuoBloom.region.repository.RegionRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -30,20 +28,15 @@ public class HospitalService {
     private final MiddleRepository middleRepository;
     private final DetailRepository detailRepository;
 
-    // 병원 리스트 조회
+
+    // 병원 필터링
     public List<HospitalListDto> findHospitalsByFilters(Long region, Long middle, Long detail, Keyword keyword, HospitalType type) {
-        Specification<Hospital> spec = Specification.where(HospitalSpecifications.hasRegion(region))
-                .and(HospitalSpecifications.hasMiddle(middle))
-                .and(HospitalSpecifications.hasDetail(detail))
-                .and(HospitalSpecifications.hasKeyword(keyword))
-                .and(HospitalSpecifications.hasType(type));
-
-        List<Hospital> hospitals = hospitalRepository.findAll(spec);
-
+        List<Hospital> hospitals = hospitalRepository.findHospitalsByFilters(region, middle, detail, keyword, type);
         return hospitals.stream().map(this::convertToListDto).collect(Collectors.toList());
     }
 
-    // 단일 병원 조회 시 전체 정보 제공
+
+    // 단일 병원 조회
     public HospitalDto getHospitalById(Integer hospitalId) {
         Hospital hospital = hospitalRepository.findById(hospitalId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 병원이 없습니다: " + hospitalId));
