@@ -18,4 +18,7 @@ public class BoardResponseDto {
     private List<BoardCommentDto> comments;
     private int likeCount;
     private int commentCount;
+    private String authorNickname;
+    private String authorProfilePictureUrl;
+    private boolean isMine;
 }

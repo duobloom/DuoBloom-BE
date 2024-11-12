@@ -14,9 +14,7 @@ import java.time.LocalDate;
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Getter
 @Entity
-@Table(name = "emotions", uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"feed_date", "user_id"})
-})
+@Table(name = "emotions")
 public class Emotion {
 
     @Id
@@ -26,21 +24,20 @@ public class Emotion {
     @Column(nullable = false)
     private Integer emoji;
 
-
     @Column(name = "feed_date", nullable = false)
     private LocalDate feedDate;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
-    private User users;
+    private User user;
 
-    public Emotion(User users, Integer emoji, LocalDate feedDate) {
-        this.users = users;
+    public Emotion(User user, Integer emoji, LocalDate feedDate) {
+        this.user = user;
         this.emoji = emoji;
         this.feedDate = feedDate;
     }
 
-    public void update(Integer emoji) {
+    public void updateEmoji(Integer emoji) {
         this.emoji = emoji;
     }
 }

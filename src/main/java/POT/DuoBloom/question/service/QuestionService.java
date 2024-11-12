@@ -5,22 +5,19 @@ import POT.DuoBloom.question.dto.QuestionDto;
 import POT.DuoBloom.question.entity.Answer;
 import POT.DuoBloom.question.entity.Question;
 import POT.DuoBloom.question.mapper.AnswerMapper;
-import POT.DuoBloom.question.mapper.QuestionMapper;
 import POT.DuoBloom.question.repository.AnswerRepository;
 import POT.DuoBloom.question.repository.QuestionRepository;
-import POT.DuoBloom.point.pointTransaction.service.PointTransactionService;
-import POT.DuoBloom.point.pointTransaction.entity.TransactionType;
 import POT.DuoBloom.user.repository.UserRepository;
 import POT.DuoBloom.user.entity.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.scheduling.annotation.Async;
 
 import java.time.LocalDate;
-import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -32,40 +29,31 @@ public class QuestionService {
     private final QuestionRepository questionRepository;
     private final UserRepository userRepository;
     private final AnswerMapper answerMapper;
-    private final QuestionMapper questionMapper;
-    private final PointTransactionService pointTransactionService;
 
-    // 특정 날짜의 질문을 조회하여 반환
-    public QuestionDto getQuestionByDate(LocalDate feedDate) {
-        return questionRepository.findByFeedDate(feedDate)
-                .map(question -> questionMapper.toDto(question, "미응답", "미응답"))
-                .orElse(null); // 질문이 없으면 null 반환
-    }
-
-    // 날짜별 질문 조회와 커플의 응답 상태 및 답변 포함
+    // 날짜별 질문 조회
+    @Cacheable(value = "questionsWithAnswers", key = "#feedDate.toString() + #userId")
     public List<QuestionDto> getQuestionsWithAnswerStatus(LocalDate feedDate, Long userId) {
         List<Question> questions = questionRepository.findAllByFeedDate(feedDate);
         if (questions.isEmpty()) {
-            return Collections.emptyList();
+            return List.of();
         }
 
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
-
+                .orElseThrow(() -> new RuntimeException("User not found: " + userId));
         User coupleUser = user.getCoupleUser();
-        Long coupleUserId = (coupleUser != null) ? coupleUser.getUserId() : null;
+        Long coupleUserId = coupleUser != null ? coupleUser.getUserId() : null;
 
         return questions.stream()
                 .map(question -> {
-                    List<AnswerDto> answerDtos = answerRepository.findByQuestion_QuestionId(question.getQuestionId())
-                            .stream()
-                            .map(answerMapper::toDto)
+                    List<Answer> answers = answerRepository.findByQuestion_QuestionId(question.getQuestionId());
+                    List<AnswerDto> answerDtos = answers.stream()
+                            .map(answer -> answerMapper.toDto(answer, userId))
                             .collect(Collectors.toList());
 
-                    String myAnswerStatus = answerRepository.findByQuestion_QuestionIdAndUser_UserId(question.getQuestionId(), userId).isPresent() ? "응답 완료" : "미응답";
-                    String coupleAnswerStatus = (coupleUserId != null && answerRepository.findByQuestion_QuestionIdAndUser_UserId(question.getQuestionId(), coupleUserId).isPresent()) ? "응답 완료" : "미응답";
+                    boolean myAnswerStatus = answers.stream().anyMatch(a -> a.getUser().getUserId().equals(userId));
+                    boolean coupleAnswerStatus = answers.stream().anyMatch(a -> a.getUser().getUserId().equals(coupleUserId));
 
-                    return new QuestionDto(question.getQuestionId(), question.getFeedDate(), question.getContent(), myAnswerStatus, coupleAnswerStatus, answerDtos);
+                    return new QuestionDto(question.getQuestionId(), question.getContent(), myAnswerStatus, coupleAnswerStatus, answerDtos);
                 })
                 .collect(Collectors.toList());
     }
@@ -73,30 +61,30 @@ public class QuestionService {
     @Transactional
     public void createAnswer(AnswerDto answerDto, Long userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
+                .orElseThrow(() -> new RuntimeException("User not found: " + userId));
 
         Question question = questionRepository.findById(answerDto.getQuestionId())
-                .orElseThrow(() -> new IllegalArgumentException("해당 질문을 찾을 수 없습니다."));
+                .orElseThrow(() -> new RuntimeException("Question not found"));
 
-        Optional<Answer> existingAnswer = answerRepository.findByQuestion_QuestionIdAndUser_UserId(question.getQuestionId(), userId);
-        if (existingAnswer.isPresent()) {
-            throw new IllegalStateException("이미 해당 질문에 답변하셨습니다.");
-        }
-
-        // Answer 엔티티 생성 및 저장
-        Answer answer = answerMapper.toEntity(answerDto, user, question);
+        Answer answer = new Answer(user, question, answerDto.getContent());
         answerRepository.save(answer);
 
-        // 포인트 증가 및 트랜잭션 기록 (ANSWER 타입으로 설정)
-        pointTransactionService.increasePoints(user, 5, TransactionType.ANSWER);
+        increasePoints(user, 5);
+    }
 
-        log.info("User {} has answered the question {} and earned 5 points", userId, question.getQuestionId());
+    @Async
+    public void increasePoints(User user, int points) {
+        log.info("User {} has earned {} points", user.getUserId(), points);
     }
 
     @Transactional
     public void updateAnswer(Long answerId, AnswerDto answerDto, Long userId) {
-        Answer answer = answerRepository.findByAnswerIdAndUser_UserId(answerId, userId)
-                .orElseThrow(() -> new IllegalArgumentException("Answer not found or not authorized"));
+        Answer answer = answerRepository.findById(answerId)
+                .orElseThrow(() -> new RuntimeException("Answer not found or not authorized"));
+
+        if (!answer.getUser().getUserId().equals(userId)) {
+            throw new SecurityException("User not authorized to update this answer");
+        }
 
         answer.updateContent(answerDto.getContent());
         answerRepository.save(answer);
@@ -104,8 +92,12 @@ public class QuestionService {
 
     @Transactional
     public void deleteAnswer(Long answerId, Long userId) {
-        Answer answer = answerRepository.findByAnswerIdAndUser_UserId(answerId, userId)
-                .orElseThrow(() -> new IllegalArgumentException("Answer not found or not authorized"));
+        Answer answer = answerRepository.findById(answerId)
+                .orElseThrow(() -> new RuntimeException("Answer not found or not authorized"));
+
+        if (!answer.getUser().getUserId().equals(userId)) {
+            throw new SecurityException("User not authorized to delete this answer");
+        }
 
         answerRepository.delete(answer);
     }

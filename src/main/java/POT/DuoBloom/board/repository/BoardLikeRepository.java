@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface BoardLikeRepository extends JpaRepository<BoardLike, Long> {
+    int countByBoard(Board board);
     boolean existsByUserAndBoard(User user, Board board);
     void deleteByUserAndBoard(User user, Board board);
-    int countByBoard(Board board);
 }

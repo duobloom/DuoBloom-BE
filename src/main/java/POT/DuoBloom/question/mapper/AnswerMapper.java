@@ -9,10 +9,17 @@ import org.springframework.stereotype.Component;
 @Component
 public class AnswerMapper {
 
-    public AnswerDto toDto(Answer answer) {
+    public AnswerDto toDto(Answer answer, Long currentUserId) {
+        boolean isMine = answer.getUser().getUserId().equals(currentUserId);
         return new AnswerDto(
                 answer.getAnswerId(),
-                answer.getContent()
+                answer.getQuestion().getQuestionId(),
+                answer.getContent(),
+                answer.getUser().getNickname(),
+                answer.getUser().getProfilePictureUrl(),
+                isMine,
+                answer.getCreatedAt(),
+                answer.getUpdatedAt()
         );
     }
 

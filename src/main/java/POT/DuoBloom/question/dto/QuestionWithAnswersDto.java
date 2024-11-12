@@ -9,7 +9,7 @@ import java.util.List;
 public class QuestionWithAnswersDto {
     private Long questionId;
     private String content;
-    private String myAnswerStatus;
-    private String coupleAnswerStatus;
+    private boolean myAnswerStatus;
+    private boolean coupleAnswerStatus;
     private List<AnswerDto> answers;
 }

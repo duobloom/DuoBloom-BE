@@ -33,9 +33,8 @@ public class BoardService {
         return user.getCoupleUser() != null;
     }
 
-    // 글 작성
     @Transactional
-    public Board createBoard(User user, String content, List<String> photoUrls) {
+    public BoardResponseDto createBoard(User user, String content, List<String> photoUrls) {
         if (!canAccessBoard(user)) {
             throw new IllegalStateException("커플인 경우에만 커뮤니티에 글을 작성할 수 있습니다.");
         }
@@ -45,42 +44,66 @@ public class BoardService {
             photoUrls.forEach(board::addPhotoUrl);
         }
 
-        return boardRepository.save(board);
+        boardRepository.save(board);
+
+        // 반환할 때 BoardResponseDto로 변환
+        return new BoardResponseDto(
+                board.getBoardId(),
+                board.getContent(),
+                board.getUpdatedAt(),
+                board.getPhotoUrls(),
+                null, // 댓글 정보는 여기서 처리하지 않음
+                likeRepository.countByBoard(board),
+                boardCommentRepository.countByBoard_BoardId(board.getBoardId()),
+                user.getNickname(),
+                user.getProfilePictureUrl(),
+                true // 현재 사용자가 작성자이므로 true
+        );
     }
 
-    // 전체 글 조회
-    @Transactional(readOnly = true)
-    public List<BoardResponseDto> getAllBoards() {
-        return boardRepository.findAll().stream()
-                .map(board -> {
-                    int likeCount = likeRepository.countByBoard(board);
-                    int commentCount = boardCommentRepository.countByBoard_BoardId(board.getBoardId());
 
-                    return new BoardResponseDto(
-                            board.getBoardId(),
-                            board.getContent(),
-                            board.getUpdatedAt(),
-                            board.getPhotoUrls(),
-                            null,
-                            likeCount,
-                            commentCount
-                    );
-                })
+    // 전체 글 조회 수정: 현재 사용자와 연결된 커플의 게시글만 조회
+    @Transactional(readOnly = true)
+    public List<BoardResponseDto> getAllBoards(User currentUser) {
+        Long currentUserId = currentUser.getUserId();
+        User coupleUser = currentUser.getCoupleUser();
+        Long coupleUserId = (coupleUser != null) ? coupleUser.getUserId() : null;
+
+        return boardRepository.findAll().stream()
+                .filter(board -> board.getUser().getUserId().equals(currentUserId) ||
+                        (coupleUserId != null && board.getUser().getUserId().equals(coupleUserId)))
+                .map(board -> new BoardResponseDto(
+                        board.getBoardId(),
+                        board.getContent(),
+                        board.getUpdatedAt(),
+                        board.getPhotoUrls(),
+                        null, // 댓글 정보는 여기서 처리하지 않음
+                        likeRepository.countByBoard(board),
+                        boardCommentRepository.countByBoard_BoardId(board.getBoardId()),
+                        board.getUser().getNickname(),
+                        board.getUser().getProfilePictureUrl(),
+                        board.getUser().getUserId().equals(currentUserId) // 로그인된 사용자가 작성자인지 확인
+                ))
                 .collect(Collectors.toList());
     }
 
 
-    // 게시글 상세 조회 (댓글 목록, 댓글 개수 및 좋아요 수 포함)
+
+
     @Transactional(readOnly = true)
-    public BoardResponseDto getBoardDetailsById(Integer boardId) {
+    public BoardResponseDto getBoardDetailsById(Integer boardId, User currentUser) {
         Board board = boardRepository.findById(boardId)
                 .orElseThrow(() -> new IllegalStateException("해당 글이 존재하지 않습니다."));
-        int likeCount = likeRepository.countByBoard(board);
-
         List<BoardComment> comments = boardCommentRepository.findByBoard_BoardId(boardId);
         List<BoardCommentDto> commentDtos = comments.stream()
-                .map(comment -> new BoardCommentDto(comment.getId(), comment.getUser().getNickname(),
-                        comment.getContent(), comment.getCreatedAt()))
+                .map(comment -> new BoardCommentDto(
+                        comment.getId(),
+                        comment.getUser().getNickname(),
+                        comment.getUser().getProfilePictureUrl(),
+                        comment.getContent(),
+                        comment.getCreatedAt(),
+                        comment.getUser().equals(currentUser)
+                ))
                 .collect(Collectors.toList());
 
         return new BoardResponseDto(
@@ -89,39 +112,41 @@ public class BoardService {
                 board.getUpdatedAt(),
                 board.getPhotoUrls(),
                 commentDtos,
-                likeCount,
-                comments.size()
+                likeRepository.countByBoard(board),
+                boardCommentRepository.countByBoard_BoardId(board.getBoardId()),
+                board.getUser().getNickname(),
+                board.getUser().getProfilePictureUrl(),
+                board.getUser().equals(currentUser)
         );
     }
 
 
-    // 날짜별 사용자 게시글 조회 (댓글 개수 및 좋아요 수 포함)
-    @Transactional(readOnly = true)
-    public List<BoardResponseDto> getBoardsByDateAndUser(LocalDate date, User user) {
-        List<Board> boards = boardRepository.findByUserAndFeedDate(user, date);
-        return boards.stream()
-                .map(board -> {
-                    int likeCount = likeRepository.countByBoard(board);
-                    int commentCount = boardCommentRepository.countByBoard_BoardId(board.getBoardId());
 
-                    return new BoardResponseDto(
-                            board.getBoardId(),
-                            board.getContent(),
-                            board.getUpdatedAt(),
-                            board.getPhotoUrls(),
-                            null,
-                            likeCount,
-                            commentCount
-                    );
-                })
+    @Transactional(readOnly = true)
+    public List<BoardResponseDto> getBoardsByDateAndUser(LocalDate date, User targetUser, Long currentUserId) {
+        List<Board> boards = boardRepository.findByUserAndFeedDate(targetUser, date);
+        return boards.stream()
+                .map(board -> new BoardResponseDto(
+                        board.getBoardId(),
+                        board.getContent(),
+                        board.getUpdatedAt(),
+                        board.getPhotoUrls(),
+                        null, // 댓글 정보는 여기서 처리하지 않음
+                        likeRepository.countByBoard(board),
+                        boardCommentRepository.countByBoard_BoardId(board.getBoardId()),
+                        targetUser.getNickname(),
+                        targetUser.getProfilePictureUrl(),
+                        board.getUser().getUserId().equals(currentUserId) // 로그인된 사용자가 작성자인지 확인
+                ))
                 .collect(Collectors.toList());
     }
 
 
 
+
     // 글 수정
     @Transactional
-    public Board updateBoard(User user, Integer boardId, String content) {
+    public BoardResponseDto updateBoard(User user, Integer boardId, String content) {
         if (!canAccessBoard(user)) {
             throw new IllegalStateException("커플인 경우에만 커뮤니티 글을 수정할 수 있습니다.");
         }
@@ -135,8 +160,24 @@ public class BoardService {
 
         board.updateContent(content);
         board.updateUpdatedAt(LocalDateTime.now());
-        return boardRepository.save(board);
+        boardRepository.save(board);
+
+        // 게시글 업데이트 후 BoardResponseDto로 변환하여 반환
+        return new BoardResponseDto(
+                board.getBoardId(),
+                board.getContent(),
+                board.getUpdatedAt(),
+                board.getPhotoUrls(),
+                null, // 댓글 정보는 여기서 처리하지 않음
+                likeRepository.countByBoard(board),
+                boardCommentRepository.countByBoard_BoardId(board.getBoardId()),
+                board.getUser().getNickname(),
+                board.getUser().getProfilePictureUrl(),
+                true // 현재 사용자가 작성자이므로 true
+        );
     }
+
+
 
     // 글 삭제
     @Transactional
