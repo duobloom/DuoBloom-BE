@@ -30,7 +30,7 @@ public class QuestionService {
     private final UserRepository userRepository;
     private final AnswerMapper answerMapper;
 
-    // 날짜별 질문 조회와 커플의 응답 상태 및 답변 포함
+    // 날짜별 질문 조회
     @Cacheable(value = "questionsWithAnswers", key = "#feedDate.toString() + #userId")
     public List<QuestionDto> getQuestionsWithAnswerStatus(LocalDate feedDate, Long userId) {
         List<Question> questions = questionRepository.findAllByFeedDate(feedDate);
@@ -47,13 +47,13 @@ public class QuestionService {
                 .map(question -> {
                     List<Answer> answers = answerRepository.findByQuestion_QuestionId(question.getQuestionId());
                     List<AnswerDto> answerDtos = answers.stream()
-                            .map(answer -> answerMapper.toDto(answer, userId))  // 수정된 매퍼 사용
+                            .map(answer -> answerMapper.toDto(answer, userId))
                             .collect(Collectors.toList());
 
-                    String myAnswerStatus = answers.stream().anyMatch(a -> a.getUser().getUserId().equals(userId)) ? "응답 완료" : "미응답";
-                    String coupleAnswerStatus = answers.stream().anyMatch(a -> a.getUser().getUserId().equals(coupleUserId)) ? "응답 완료" : "미응답";
+                    boolean myAnswerStatus = answers.stream().anyMatch(a -> a.getUser().getUserId().equals(userId));
+                    boolean coupleAnswerStatus = answers.stream().anyMatch(a -> a.getUser().getUserId().equals(coupleUserId));
 
-                    return new QuestionDto(question.getQuestionId(), question.getFeedDate(), question.getContent(), myAnswerStatus, coupleAnswerStatus, answerDtos);
+                    return new QuestionDto(question.getQuestionId(), question.getContent(), myAnswerStatus, coupleAnswerStatus, answerDtos);
                 })
                 .collect(Collectors.toList());
     }
@@ -74,7 +74,6 @@ public class QuestionService {
 
     @Async
     public void increasePoints(User user, int points) {
-        // 포인트 증가 로직 및 로깅
         log.info("User {} has earned {} points", user.getUserId(), points);
     }
 

@@ -17,7 +17,9 @@ public class AnswerMapper {
                 answer.getContent(),
                 answer.getUser().getNickname(),
                 answer.getUser().getProfilePictureUrl(),
-                isMine // 내가 쓴 답변인지 여부
+                isMine,
+                answer.getCreatedAt(),
+                answer.getUpdatedAt()
         );
     }
 
