@@ -3,7 +3,6 @@ package POT.DuoBloom.emotion.service;
 import POT.DuoBloom.emotion.entity.Emotion;
 import POT.DuoBloom.emotion.repository.EmotionRepository;
 import POT.DuoBloom.emotion.dto.EmotionResponseDto;
-import POT.DuoBloom.emotion.dto.EmotionUpdateDto;
 import POT.DuoBloom.user.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -11,7 +10,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -20,8 +18,8 @@ public class EmotionService {
 
     private final EmotionRepository emotionRepository;
 
-    public List<EmotionResponseDto> findByFeedDateAndUsers(LocalDate feedDate, User users) {
-        return emotionRepository.findByFeedDateAndUsers(feedDate, users)
+    public List<EmotionResponseDto> findByFeedDateAndUser(LocalDate feedDate, User users) {
+        return emotionRepository.findByFeedDateAndUser(feedDate, users)
                 .stream()
                 .map(emotion -> new EmotionResponseDto(
                         emotion.getEmotionId(),
@@ -31,25 +29,20 @@ public class EmotionService {
                 .collect(Collectors.toList());
     }
 
-
     @Transactional
-    public boolean createEmotion(LocalDate feedDate, User users, EmotionUpdateDto emotionUpdateDto) {
-        Optional<Emotion> existingEmotion = emotionRepository.findByFeedDateAndUsers(feedDate, users);
+    public Emotion createOrUpdateEmotion(LocalDate feedDate, User user, Integer emoji) {
+        // 해당 날짜에 기록된 감정이 있는지 확인
+        List<Emotion> existingEmotions = emotionRepository.findByFeedDateAndUser(feedDate, user);
 
-        if (existingEmotion.isPresent()) {
-            return false;
+        if (!existingEmotions.isEmpty()) {
+            // 첫 번째 감정의 이모지를 업데이트
+            Emotion emotion = existingEmotions.get(0);
+            emotion.updateEmoji(emoji);
+            return emotion;
         }
 
-        Emotion newEmotion = new Emotion(users, emotionUpdateDto.getEmoji(), feedDate);
-        emotionRepository.save(newEmotion);
-        return true;
-    }
-
-    @Transactional
-    public void updateEmotion(Long emotionId, EmotionUpdateDto emotionUpdateDto) {
-        Emotion emotion = emotionRepository.findById(emotionId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 감정을 찾을 수 없습니다. ID: " + emotionId));
-
-        emotion.update(emotionUpdateDto.getEmoji());
+        // 감정이 없으면 새로 생성
+        Emotion newEmotion = new Emotion(user, emoji, feedDate);
+        return emotionRepository.save(newEmotion);
     }
 }

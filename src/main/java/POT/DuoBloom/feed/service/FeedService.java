@@ -38,8 +38,8 @@ public class FeedService {
         }
 
         // Emotion 조회
-        List<EmotionResponseDto> userEmotion = emotionService.findByFeedDateAndUsers(feedDate, user);
-        List<EmotionResponseDto> coupleEmotion = emotionService.findByFeedDateAndUsers(feedDate, coupleUser);
+        List<EmotionResponseDto> userEmotion = emotionService.findByFeedDateAndUser(feedDate, user);
+        List<EmotionResponseDto> coupleEmotion = emotionService.findByFeedDateAndUser(feedDate, coupleUser);
 
         // Board 조회
         List<BoardResponseDto> userBoards = boardService.getBoardsByDateAndUser(feedDate, user, userId);

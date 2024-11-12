@@ -6,9 +6,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
-import java.util.Optional;
+import java.util.List;
 
 @Repository
 public interface EmotionRepository extends JpaRepository<Emotion, Long> {
-    Optional<Emotion> findByFeedDateAndUsers(LocalDate feedDate, User users);
+    List<Emotion> findByFeedDateAndUser(LocalDate feedDate, User user);
 }
