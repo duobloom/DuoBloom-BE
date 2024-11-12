@@ -40,15 +40,10 @@ public class FeedController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        User user = (User) session.getAttribute("user");
-        if (user == null) {
-            user = userRepository.findById(userId)
-                    .orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
-            session.setAttribute("user", user);
-        }
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
 
         FeedResponseDto feedResponse = feedService.getDailyFeed(date, user.getUserId());
-
         return ResponseEntity.ok(feedResponse);
     }
 }

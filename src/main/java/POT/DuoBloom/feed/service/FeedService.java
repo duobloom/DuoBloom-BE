@@ -37,9 +37,9 @@ public class FeedService {
             throw new IllegalStateException("커플 연결이 필요합니다.");
         }
 
-        // Emotion 조회
-        List<EmotionResponseDto> userEmotion = emotionService.findByFeedDateAndUser(feedDate, user);
-        List<EmotionResponseDto> coupleEmotion = emotionService.findByFeedDateAndUser(feedDate, coupleUser);
+        // Emotion 조회 및 작성자 정보 설정
+        List<EmotionResponseDto> userEmotions = emotionService.findByFeedDateAndUser(feedDate, user, userId);
+        List<EmotionResponseDto> coupleEmotions = emotionService.findByFeedDateAndUser(feedDate, coupleUser, userId);
 
         // Board 조회
         List<BoardResponseDto> userBoards = boardService.getBoardsByDateAndUser(feedDate, user, userId);
@@ -59,8 +59,8 @@ public class FeedService {
 
         return new FeedResponseDto(
                 feedDate,
-                userEmotion.isEmpty() ? null : userEmotion.get(0),
-                coupleEmotion.isEmpty() ? null : coupleEmotion.get(0),
+                userEmotions,
+                coupleEmotions,
                 userBoards,
                 coupleBoards,
                 questionsWithAnswers

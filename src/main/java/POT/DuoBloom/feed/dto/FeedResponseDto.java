@@ -12,10 +12,10 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 public class FeedResponseDto {
-    
+
     private LocalDate feedDate;
-    private EmotionResponseDto userEmotion;
-    private EmotionResponseDto coupleEmotion;
+    private List<EmotionResponseDto> userEmotions;
+    private List<EmotionResponseDto> coupleEmotions;
     private List<BoardResponseDto> userBoards;
     private List<BoardResponseDto> coupleBoards;
     private List<QuestionWithAnswersDto> questionsWithAnswers;
