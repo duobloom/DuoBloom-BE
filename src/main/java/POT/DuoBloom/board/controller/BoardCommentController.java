@@ -30,7 +30,7 @@ public class BoardCommentController {
             @ApiResponse(responseCode = "200", description = "댓글 추가 성공"),
             @ApiResponse(responseCode = "401", description = "로그인이 필요합니다.")
     })
-    @PostMapping("/{boardId}/comment")
+    @PostMapping("/{boardId}/comments")
     public ResponseEntity<BoardCommentDto> addComment(@PathVariable Integer boardId,
                                                       @RequestBody String content,
                                                       HttpSession session) {
@@ -40,7 +40,15 @@ public class BoardCommentController {
         }
         User user = userService.findById(userId);
         BoardComment boardComment = boardService.addComment(user, boardId, content);
-        BoardCommentDto responseDto = new BoardCommentDto(boardComment.getId(), user.getNickname(), content, boardComment.getCreatedAt());
+        // isMine 항상 true로 설정하여 현재 사용자가 댓글 작성자임을 표시
+        BoardCommentDto responseDto = new BoardCommentDto(
+                boardComment.getId(),
+                user.getNickname(),
+                user.getProfilePictureUrl(),
+                boardComment.getContent(),
+                boardComment.getCreatedAt(),
+                true // isMine
+        );
         return ResponseEntity.ok(responseDto);
     }
 
@@ -50,7 +58,7 @@ public class BoardCommentController {
             @ApiResponse(responseCode = "401", description = "로그인이 필요합니다."),
             @ApiResponse(responseCode = "404", description = "댓글을 찾을 수 없습니다.")
     })
-    @DeleteMapping("/{boardId}/comments/{commentId}")
+    @DeleteMapping("/comments/{commentId}")
     public ResponseEntity<Void> deleteComment(@PathVariable Long commentId, HttpSession session) {
         Long userId = (Long) session.getAttribute("userId");
         if (userId == null) {

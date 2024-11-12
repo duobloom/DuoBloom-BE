@@ -31,7 +31,7 @@ public class FeedService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
 
-        // coupleUser 가져오기
+        // 커플 사용자 가져오기
         User coupleUser = user.getCoupleUser();
         if (coupleUser == null) {
             throw new IllegalStateException("커플 연결이 필요합니다.");
@@ -41,12 +41,12 @@ public class FeedService {
         List<EmotionResponseDto> userEmotion = emotionService.findByFeedDateAndUsers(feedDate, user);
         List<EmotionResponseDto> coupleEmotion = emotionService.findByFeedDateAndUsers(feedDate, coupleUser);
 
-        // Board 조회
-        List<BoardResponseDto> userBoards = boardService.getBoardsByDateAndUser(feedDate, user);
-        List<BoardResponseDto> coupleBoards = boardService.getBoardsByDateAndUser(feedDate, coupleUser);
+        // Board 조회: 각 사용자의 게시글 리스트를 가져오며 `isMine` 필드를 정확하게 설정
+        List<BoardResponseDto> userBoards = boardService.getBoardsByDateAndUser(feedDate, user, userId);
+        List<BoardResponseDto> coupleBoards = boardService.getBoardsByDateAndUser(feedDate, coupleUser, userId);
 
         // Question + Answer 조회 후 변환
-        List<QuestionWithAnswersDto> questionsWithAnswers = questionService.getQuestionsWithAnswerStatus(feedDate, user.getUserId())
+        List<QuestionWithAnswersDto> questionsWithAnswers = questionService.getQuestionsWithAnswerStatus(feedDate, userId)
                 .stream()
                 .map(questionDto -> new QuestionWithAnswersDto(
                         questionDto.getQuestionId(),
