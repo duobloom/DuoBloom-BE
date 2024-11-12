@@ -18,30 +18,23 @@ public class EmotionService {
 
     private final EmotionRepository emotionRepository;
 
-    public List<EmotionResponseDto> findByFeedDateAndUser(LocalDate feedDate, User users) {
-        return emotionRepository.findByFeedDateAndUser(feedDate, users)
+    public List<EmotionResponseDto> findByFeedDateAndUser(LocalDate feedDate, User user, Long loggedInUserId) {
+        return emotionRepository.findByFeedDateAndUser(feedDate, user)
                 .stream()
                 .map(emotion -> new EmotionResponseDto(
                         emotion.getEmotionId(),
                         emotion.getEmoji(),
-                        emotion.getFeedDate()
+                        emotion.getFeedDate(),
+                        emotion.getCreatedAt(),
+                        user.getNickname(),
+                        user.getProfilePictureUrl(),
+                        user.getUserId().equals(loggedInUserId)
                 ))
                 .collect(Collectors.toList());
     }
 
     @Transactional
-    public Emotion createOrUpdateEmotion(LocalDate feedDate, User user, Integer emoji) {
-        // 해당 날짜에 기록된 감정이 있는지 확인
-        List<Emotion> existingEmotions = emotionRepository.findByFeedDateAndUser(feedDate, user);
-
-        if (!existingEmotions.isEmpty()) {
-            // 첫 번째 감정의 이모지를 업데이트
-            Emotion emotion = existingEmotions.get(0);
-            emotion.updateEmoji(emoji);
-            return emotion;
-        }
-
-        // 감정이 없으면 새로 생성
+    public Emotion createEmotion(LocalDate feedDate, User user, Integer emoji) {
         Emotion newEmotion = new Emotion(user, emoji, feedDate);
         return emotionRepository.save(newEmotion);
     }

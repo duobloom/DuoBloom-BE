@@ -29,35 +29,35 @@ public class EmotionController {
 
     @Operation(summary = "날짜별 감정 조회", description = "지정한 날짜의 감정을 배열로 조회합니다.")
     @GetMapping("/{date}")
-    public ResponseEntity<List<EmotionResponseDto>> getEmotionByDate(@PathVariable String date, HttpSession session) {
-        User users = getUserFromSession(session);
-        if (users == null) {
+    public ResponseEntity<List<EmotionResponseDto>> getEmotionByDate(
+            @PathVariable String date,
+            HttpSession session) {
+        User user = getUserFromSession(session);
+        if (user == null) {
             return ResponseEntity.status(401).build();
         }
 
         LocalDate localDate = LocalDate.parse(date);
-        List<EmotionResponseDto> emotions = emotionService.findByFeedDateAndUser(localDate, users);
+        List<EmotionResponseDto> emotions = emotionService.findByFeedDateAndUser(localDate, user, user.getUserId());
         return ResponseEntity.ok(emotions);
     }
 
-
-    @Operation(summary = "감정 생성 또는 수정", description = "지정한 날짜의 감정을 생성하거나 수정합니다.")
+    @Operation(summary = "감정 생성", description = "지정한 날짜의 감정을 생성합니다.")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "감정 생성 또는 수정 성공"),
+            @ApiResponse(responseCode = "201", description = "감정 생성 성공"),
             @ApiResponse(responseCode = "401", description = "로그인이 필요합니다.")
     })
     @PostMapping
-    public ResponseEntity<Void> createOrUpdateEmotion(@RequestBody EmotionUpdateDto emotionUpdateDto, HttpSession session) {
+    public ResponseEntity<Void> createEmotion(@RequestBody EmotionUpdateDto emotionUpdateDto, HttpSession session) {
         User user = getUserFromSession(session);
         if (user == null) {
             return ResponseEntity.status(401).build();
         }
 
         LocalDate feedDate = LocalDate.now();
-        emotionService.createOrUpdateEmotion(feedDate, user, emotionUpdateDto.getEmoji());
+        emotionService.createEmotion(feedDate, user, emotionUpdateDto.getEmoji());
         return ResponseEntity.status(201).build();
     }
-
 
     private User getUserFromSession(HttpSession session) {
         Long userId = (Long) session.getAttribute("userId");

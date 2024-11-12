@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -31,13 +32,17 @@ public class Emotion {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
+    }
+
     public Emotion(User user, Integer emoji, LocalDate feedDate) {
         this.user = user;
         this.emoji = emoji;
         this.feedDate = feedDate;
-    }
-
-    public void updateEmoji(Integer emoji) {
-        this.emoji = emoji;
     }
 }
