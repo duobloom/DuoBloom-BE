@@ -14,6 +14,6 @@ public class PointTransactionDTO {
     private TransactionType transactionType;
     private LocalDateTime createdAt;
     private Integer balance;
-    private Long userId;
+    private boolean mine;
 }
 
