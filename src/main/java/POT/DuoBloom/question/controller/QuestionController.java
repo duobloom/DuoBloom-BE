@@ -1,7 +1,7 @@
 package POT.DuoBloom.question.controller;
 
 import POT.DuoBloom.question.dto.AnswerDto;
-import POT.DuoBloom.question.dto.QuestionDto;
+import POT.DuoBloom.question.dto.QuestionWithAnswersDto;
 import POT.DuoBloom.question.service.QuestionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -31,13 +31,14 @@ public class QuestionController {
             @ApiResponse(responseCode = "401", description = "로그인이 필요합니다.")
     })
     @GetMapping("/questions/{date}")
-    public ResponseEntity<List<QuestionDto>> getQuestionsByDateWithCoupleAnswers(
+    public ResponseEntity<List<QuestionWithAnswersDto>> getQuestionsByDateWithCoupleAnswers(
             @PathVariable LocalDate date, HttpSession session) {
         Long userId = (Long) session.getAttribute("userId");
         if (userId == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-        return ResponseEntity.ok(questionService.getQuestionsWithAnswerStatus(date, userId));
+        List<QuestionWithAnswersDto> questionDtos = questionService.getQuestionsWithAnswerStatus(date, userId);
+        return ResponseEntity.ok(questionDtos);
     }
 
     @Operation(summary = "공통 질문 답변 작성", description = "지정된 질문에 대한 답변을 작성합니다.")

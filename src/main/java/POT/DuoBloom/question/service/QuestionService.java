@@ -1,10 +1,9 @@
 package POT.DuoBloom.question.service;
 
 import POT.DuoBloom.question.dto.AnswerDto;
-import POT.DuoBloom.question.dto.QuestionDto;
+import POT.DuoBloom.question.dto.QuestionWithAnswersDto;
 import POT.DuoBloom.question.entity.Answer;
 import POT.DuoBloom.question.entity.Question;
-import POT.DuoBloom.question.mapper.AnswerMapper;
 import POT.DuoBloom.question.repository.AnswerRepository;
 import POT.DuoBloom.question.repository.QuestionRepository;
 import POT.DuoBloom.user.repository.UserRepository;
@@ -13,12 +12,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.scheduling.annotation.Async;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Slf4j
 @Service
@@ -28,34 +28,46 @@ public class QuestionService {
     private final AnswerRepository answerRepository;
     private final QuestionRepository questionRepository;
     private final UserRepository userRepository;
-    private final AnswerMapper answerMapper;
 
-    // 날짜별 질문 조회
-    @Cacheable(value = "questionsWithAnswers", key = "#feedDate.toString() + #userId")
-    public List<QuestionDto> getQuestionsWithAnswerStatus(LocalDate feedDate, Long userId) {
+    @Transactional(readOnly = true)
+    public List<QuestionWithAnswersDto> getQuestionsWithAnswerStatus(LocalDate feedDate, Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
+        User coupleUser = user.getCoupleUser();
+        Long coupleUserId = (coupleUser != null) ? coupleUser.getUserId() : null;
+
         List<Question> questions = questionRepository.findAllByFeedDate(feedDate);
         if (questions.isEmpty()) {
             return List.of();
         }
 
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found: " + userId));
-        User coupleUser = user.getCoupleUser();
-        Long coupleUserId = coupleUser != null ? coupleUser.getUserId() : null;
+        return questions.stream().map(question -> {
+            List<AnswerDto> answers = Stream.of(userId, coupleUserId)
+                    .filter(Objects::nonNull)
+                    .flatMap(id -> answerRepository.findByQuestion_QuestionIdAndUser_UserId(question.getQuestionId(), id).stream())
+                    .map(answer -> new AnswerDto(
+                            answer.getAnswerId(),
+                            answer.getQuestion().getQuestionId(),
+                            answer.getContent(),
+                            answer.getUser().getNickname(),
+                            answer.getUser().getProfilePictureUrl(),
+                            answer.getUser().getUserId().equals(userId), // isMine 여부 설정
+                            answer.getCreatedAt(),
+                            answer.getUpdatedAt()
+                    ))
+                    .collect(Collectors.toList());
 
-        return questions.stream()
-                .map(question -> {
-                    List<Answer> answers = answerRepository.findByQuestion_QuestionId(question.getQuestionId());
-                    List<AnswerDto> answerDtos = answers.stream()
-                            .map(answer -> answerMapper.toDto(answer, userId))
-                            .collect(Collectors.toList());
+            boolean myAnswerStatus = answers.stream().anyMatch(a -> a.isMine());
+            boolean coupleAnswerStatus = answers.stream().anyMatch(a -> coupleUserId != null && a.isMine() == false);
 
-                    boolean myAnswerStatus = answers.stream().anyMatch(a -> a.getUser().getUserId().equals(userId));
-                    boolean coupleAnswerStatus = answers.stream().anyMatch(a -> a.getUser().getUserId().equals(coupleUserId));
-
-                    return new QuestionDto(question.getQuestionId(), question.getContent(), myAnswerStatus, coupleAnswerStatus, answerDtos);
-                })
-                .collect(Collectors.toList());
+            return new QuestionWithAnswersDto(
+                    question.getQuestionId(),
+                    question.getContent(),
+                    myAnswerStatus,
+                    coupleAnswerStatus,
+                    answers
+            );
+        }).collect(Collectors.toList());
     }
 
     @Transactional

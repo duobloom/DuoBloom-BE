@@ -45,17 +45,9 @@ public class FeedService {
         List<BoardResponseDto> userBoards = boardService.getBoardsByDateAndUser(feedDate, user, userId);
         List<BoardResponseDto> coupleBoards = boardService.getBoardsByDateAndUser(feedDate, coupleUser, userId);
 
-        // Question + Answer 조회 후 변환
-        List<QuestionWithAnswersDto> questionsWithAnswers = questionService.getQuestionsWithAnswerStatus(feedDate, userId)
-                .stream()
-                .map(questionDto -> new QuestionWithAnswersDto(
-                        questionDto.getQuestionId(),
-                        questionDto.getContent(),
-                        questionDto.isMyAnswerStatus(),
-                        questionDto.isCoupleAnswerStatus(),
-                        questionDto.getAnswers()
-                ))
-                .collect(Collectors.toList());
+        // Question + Answer 조
+        List<QuestionWithAnswersDto> questionsWithAnswers = questionService.getQuestionsWithAnswerStatus(feedDate, userId);
+
 
         return new FeedResponseDto(
                 feedDate,
