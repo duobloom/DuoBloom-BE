@@ -28,6 +28,15 @@ public class HospitalService {
     private final MiddleRepository middleRepository;
     private final DetailRepository detailRepository;
 
+    // 병원 이름으로 검색
+    public List<HospitalListDto> findHospitalsByName(String name) {
+        List<Hospital> hospitals = hospitalRepository.findByHospitalNameContaining(name);
+        if (hospitals.isEmpty()) {
+            return List.of();
+        }
+        return hospitals.stream().map(this::convertToListDto).collect(Collectors.toList());
+    }
+
 
     // 병원 필터링
     public List<HospitalListDto> findHospitalsByFilters(Long region, Long middle, Long detail, Keyword keyword, HospitalType type) {

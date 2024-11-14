@@ -20,7 +20,7 @@ public class HospitalController {
 
     private final HospitalService hospitalService;
 
-    @GetMapping("/search")
+    @GetMapping("/filter")
     public List<HospitalListDto> getHospitalsByFilters(
             @RequestParam(value = "region", required = false) Long region,
             @RequestParam(value = "middle", required = false) Long middle,
@@ -28,6 +28,11 @@ public class HospitalController {
             @RequestParam(value = "keyword", required = false) Keyword keyword,
             @RequestParam(value = "type", required = false) HospitalType type) {
         return hospitalService.findHospitalsByFilters(region, middle, detail, keyword, type);
+    }
+
+    @GetMapping("/search")
+    public List<HospitalListDto> searchHospitalsByName(@RequestParam("name") String name) {
+        return hospitalService.findHospitalsByName(name);
     }
 
     @GetMapping("/{hospitalId}")
