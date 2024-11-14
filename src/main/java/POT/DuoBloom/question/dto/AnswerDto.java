@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 public class AnswerDto {
     private Long answerId;
     private Long questionId;
+    private Long userId; // 작성자 ID 필드 추가
     private String content;
     private String nickname;
     private String profilePictureUrl;
