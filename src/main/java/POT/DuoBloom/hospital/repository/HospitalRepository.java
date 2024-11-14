@@ -13,6 +13,8 @@ import java.util.List;
 @Repository
 public interface HospitalRepository extends JpaRepository<Hospital, Integer> {
 
+    List<Hospital> findByHospitalNameContaining(String name);
+
     @Query("SELECT h FROM Hospital h " +
             "LEFT JOIN h.keywordMappings km " +
             "WHERE (:region IS NULL OR h.region = :region) " +
