@@ -33,17 +33,15 @@ public class FeedController {
     @GetMapping("/{date}")
     public ResponseEntity<FeedResponseDto> getDailyFeed(
             @PathVariable LocalDate date,
-            @SessionAttribute(name = "userId", required = false) Long userId,
             HttpSession session) {
 
+        Long userId = (Long) session.getAttribute("userId");
         if (userId == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
-
-        FeedResponseDto feedResponse = feedService.getDailyFeed(date, user.getUserId());
+        FeedResponseDto feedResponse = feedService.getDailyFeed(date, userId);
         return ResponseEntity.ok(feedResponse);
     }
+
 }
