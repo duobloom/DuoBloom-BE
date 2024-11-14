@@ -41,18 +41,19 @@ public class PointTransactionController {
         return ResponseEntity.ok(points);
     }
 
-    @Operation(summary = "포인트 거래 내역 조회", description = "로그인한 사용자의 포인트 거래 내역을 조회합니다.")
+    @Operation(summary = "포인트 거래 내역 조회", description = "로그인한 사용자와 그의 커플의 포인트 거래 내역을 조회합니다.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "포인트 거래 내역 조회 성공"),
             @ApiResponse(responseCode = "401", description = "로그인이 필요합니다.")
     })
     @GetMapping("/history")
-    public ResponseEntity<List<PointTransactionDTO>> getPointHistory(HttpSession session) {
+    public ResponseEntity<List<PointTransactionDTO>> getCombinedPointHistory(HttpSession session) {
         Long userId = (Long) session.getAttribute("userId");
         if (userId == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-        List<PointTransactionDTO> history = pointTransactionService.getPointHistory(userId);
+        List<PointTransactionDTO> history = pointTransactionService.getCombinedPointHistory(userId, userId);
         return ResponseEntity.ok(history);
     }
+
 }

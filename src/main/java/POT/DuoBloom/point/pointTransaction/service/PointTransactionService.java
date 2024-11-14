@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -30,9 +31,18 @@ public class PointTransactionService {
         return user.getBalance();
     }
 
-    public List<PointTransactionDTO> getPointHistory(Long userId) {
-        return pointTransactionRepository.findByUser_UserId(userId).stream()
-                .map(PointTransactionMapper::toDto)
+    public List<PointTransactionDTO> getCombinedPointHistory(Long userId, Long sessionUserId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
+
+        List<PointTransaction> transactions = pointTransactionRepository.findByUser_UserId(userId);
+        if (user.getCoupleUser() != null) {
+            transactions.addAll(pointTransactionRepository.findByUser_UserId(user.getCoupleUser().getUserId()));
+        }
+
+        return transactions.stream()
+                .map(transaction -> PointTransactionMapper.toDto(transaction, sessionUserId))
+                .sorted(Comparator.comparing(PointTransactionDTO::getCreatedAt).reversed())
                 .collect(Collectors.toList());
     }
 
@@ -73,6 +83,6 @@ public class PointTransactionService {
         log.info("Processed transaction for user {}: amount={}, transactionType={}, new balance={}",
                 user.getUserId(), amount, transactionType, user.getBalance());
 
-        return PointTransactionMapper.toDto(transaction);
+        return PointTransactionMapper.toDto(transaction, user.getUserId());
     }
 }
