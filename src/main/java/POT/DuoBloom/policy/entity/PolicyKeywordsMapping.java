@@ -1,6 +1,5 @@
 package POT.DuoBloom.policy.entity;
 
-
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -11,6 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
+@Table(name = "policy_keywords_mapping")
 public class PolicyKeywordsMapping {
 
     @Id

@@ -1,21 +1,21 @@
 package POT.DuoBloom.policy.entity;
 
-import POT.DuoBloom.hospital.entity.Keyword;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
 import java.util.List;
 
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
+@Table(name = "policy_keywords")
 public class PolicyKeywords {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "keyword_id")
     private Long keywordId;
 
     @Enumerated(EnumType.STRING)
@@ -24,6 +24,4 @@ public class PolicyKeywords {
 
     @OneToMany(mappedBy = "keyword", cascade = CascadeType.ALL)
     private List<PolicyKeywordsMapping> policyMappings;
-
-
 }
