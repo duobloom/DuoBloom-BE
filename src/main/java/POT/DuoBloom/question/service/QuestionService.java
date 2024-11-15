@@ -51,7 +51,7 @@ public class QuestionService {
                             answer.getContent(),
                             answer.getUser().getNickname(),
                             answer.getUser().getProfilePictureUrl(),
-                            answer.getUser().getUserId().equals(userId), // isMine 여부 설정
+                            answer.getUser().getUserId().equals(userId),
                             answer.getCreatedAt(),
                             answer.getUpdatedAt()
                     ))

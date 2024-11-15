@@ -1,7 +1,8 @@
 package POT.DuoBloom.community.controller;
 
-import POT.DuoBloom.community.dto.CommunityRequestDto;
-import POT.DuoBloom.community.dto.CommunityResponseDto;
+import POT.DuoBloom.community.dto.*;
+import POT.DuoBloom.community.dto.CommunityListResponseDto;
+import POT.DuoBloom.community.service.CommunityCommentService;
 import POT.DuoBloom.community.service.CommunityService;
 import POT.DuoBloom.user.repository.UserRepository;
 import POT.DuoBloom.user.entity.User;
@@ -23,6 +24,7 @@ import java.util.List;
 public class CommunityController {
 
     private final CommunityService communityService;
+    private final CommunityCommentService communityCommentService;
     private final UserRepository userRepository;
 
     @Operation(summary = "커뮤니티 게시글 생성", description = "새로운 커뮤니티 게시글을 생성합니다.")
@@ -47,15 +49,35 @@ public class CommunityController {
         return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
     }
 
-    @Operation(summary = "모든 커뮤니티 게시글 조회", description = "모든 커뮤니티 게시글을 조회합니다.")
+    @Operation(summary = "단일 게시글 조회", description = "단일 게시글을 조회합니다.")
     @ApiResponse(responseCode = "200", description = "게시글 조회 성공")
-    @GetMapping
-    public ResponseEntity<List<CommunityResponseDto>> getAllCommunities(
+    @GetMapping("/{communityId}")
+    public ResponseEntity<CommunityFullResponseDto> getCommunityWithDetails(
+            @PathVariable Long communityId,
             @SessionAttribute(name = "userId", required = false) Long userId) {
 
-        List<CommunityResponseDto> responseDtos = communityService.getAllCommunities(userId);
+        if (userId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        CommunityFullResponseDto response = communityService.getCommunityWithDetails(communityId, userId);
+        return ResponseEntity.ok(response);
+    }
+
+    @Operation(summary = "커뮤니티 게시글 목록 조회", description = "모든 커뮤니티 게시글을 조회합니다.")
+    @ApiResponse(responseCode = "200", description = "게시글 목록 조회 성공")
+    @GetMapping
+    public ResponseEntity<List<CommunityListResponseDto>> getCommunityList(
+            @SessionAttribute(name = "userId", required = false) Long userId) {
+
+        if (userId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        List<CommunityListResponseDto> responseDtos = communityService.getCommunityList(userId);
         return ResponseEntity.ok(responseDtos);
     }
+
 
     @Operation(summary = "커뮤니티 게시글 수정", description = "특정 커뮤니티 게시글을 수정합니다.")
     @ApiResponses({
@@ -132,5 +154,34 @@ public class CommunityController {
             session.setAttribute("user", user);
         }
         return user;
+    }
+
+    @Operation(summary = "커뮤니티 게시글에 댓글 추가", description = "특정 커뮤니티 게시글에 댓글을 추가합니다.")
+    @PostMapping("/{communityId}/comments")
+    public ResponseEntity<CommunityCommentResponseDto> addComment(
+            @PathVariable Long communityId,
+            @RequestBody CommunityCommentRequestDto requestDto,
+            @SessionAttribute(name = "userId", required = false) Long userId) {
+
+        if (userId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        CommunityCommentResponseDto responseDto = communityCommentService.addComment(communityId, requestDto, userId);
+        return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
+    }
+
+    @Operation(summary = "커뮤니티 게시글 댓글 삭제", description = "특정 커뮤니티 게시글의 댓글을 삭제합니다.")
+    @DeleteMapping("/comments/{commentId}")
+    public ResponseEntity<Void> deleteComment(
+            @PathVariable Long commentId,
+            @SessionAttribute(name = "userId", required = false) Long userId) {
+
+        if (userId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        communityCommentService.deleteComment(commentId, userId);
+        return ResponseEntity.noContent().build();
     }
 }
