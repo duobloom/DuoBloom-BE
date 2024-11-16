@@ -2,7 +2,6 @@ package POT.DuoBloom.domain.hospital.controller;
 
 import POT.DuoBloom.common.exception.CustomException;
 import POT.DuoBloom.common.exception.ErrorCode;
-import POT.DuoBloom.domain.hospital.dto.request.ScrapRequestDto;
 import POT.DuoBloom.domain.hospital.dto.response.HospitalListDto;
 import POT.DuoBloom.domain.hospital.service.HospitalScrapService;
 import POT.DuoBloom.domain.user.entity.User;
@@ -23,7 +22,7 @@ public class HospitalScrapController {
 
     // 병원 스크랩 추가
     @PostMapping
-    public void scrapHospital(HttpSession session, @RequestBody ScrapRequestDto requestDto) {
+    public void scrapHospital(HttpSession session, @RequestParam Integer hospitalId) {
         Long userId = (Long) session.getAttribute("userId");
         if (userId == null) {
             throw new CustomException(ErrorCode.SESSION_USER_NOT_FOUND);
@@ -31,8 +30,12 @@ public class HospitalScrapController {
 
         User user = userService.findById(userId);
 
+        if (user == null) {
+            throw new CustomException(ErrorCode.USER_NOT_FOUND);
+        }
+
         try {
-            hospitalScrapService.scrapHospital(user, requestDto.getHospitalId());
+            hospitalScrapService.scrapHospital(user, hospitalId);
         } catch (CustomException e) {
             if (e.getErrorCode() == ErrorCode.ALREADY_SCRAPPED) {
                 throw new CustomException(ErrorCode.ALREADY_SCRAPPED);
@@ -48,28 +51,35 @@ public class HospitalScrapController {
         if (userId == null) {
             throw new CustomException(ErrorCode.SESSION_USER_NOT_FOUND);
         }
+
         User user = userService.findById(userId);
+        if (user == null) {
+            throw new CustomException(ErrorCode.USER_NOT_FOUND);
+        }
+
         return hospitalScrapService.getHospitalScraps(user);
     }
 
-        // 병원 스크랩 취소
-        @DeleteMapping
-        public void unsaveHospital(HttpSession session, @RequestBody ScrapRequestDto requestDto) {
-            Long userId = (Long) session.getAttribute("userId");
-            if (userId == null) {
-                throw new CustomException(ErrorCode.SESSION_USER_NOT_FOUND);
-            }
-
-            User user = userService.findById(userId);
-
-            try {
-                hospitalScrapService.unsaveHospital(user, requestDto.getHospitalId());
-            } catch (CustomException e) {
-                if (e.getErrorCode() == ErrorCode.SCRAP_NOT_FOUND) {
-                    throw new CustomException(ErrorCode.SCRAP_NOT_FOUND);
-                }
-                throw e;
-            }
+    // 병원 스크랩 취소
+    @DeleteMapping
+    public void unsaveHospital(HttpSession session, @RequestParam Integer hospitalId) {
+        Long userId = (Long) session.getAttribute("userId");
+        if (userId == null) {
+            throw new CustomException(ErrorCode.SESSION_USER_NOT_FOUND);
         }
-}
 
+        User user = userService.findById(userId);
+        if (user == null) {
+            throw new CustomException(ErrorCode.USER_NOT_FOUND);
+        }
+
+        try {
+            hospitalScrapService.unsaveHospital(user, hospitalId);
+        } catch (CustomException e) {
+            if (e.getErrorCode() == ErrorCode.SCRAP_NOT_FOUND) {
+                throw new CustomException(ErrorCode.SCRAP_NOT_FOUND);
+            }
+            throw e;
+        }
+    }
+}
