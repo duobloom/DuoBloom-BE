@@ -32,7 +32,6 @@ public class CommunityService {
 
         Community community = new Community(requestDto.getContent(), requestDto.getType(), user);
 
-        // 태그 추가
         if (requestDto.getTags() != null) {
             for (String tagName : requestDto.getTags()) {
                 Tag tag = tagRepository.findByName(tagName)
@@ -57,7 +56,6 @@ public class CommunityService {
         Community community = communityRepository.findById(communityId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Community not found"));
 
-        // CommunityResponseDto 생성
         CommunityResponseDto communityDto = new CommunityResponseDto(
                 community.getCommunityId(),
                 community.getContent(),
@@ -66,7 +64,6 @@ public class CommunityService {
                 community.getUser().getProfilePictureUrl()
         );
 
-        // CommunityImageResponseDto 리스트 생성
         List<CommunityImageResponseDto> images = community.getImageMappings()
                 .stream()
                 .map(mapping -> new CommunityImageResponseDto(
@@ -74,7 +71,6 @@ public class CommunityService {
                         mapping.getCommunityImage().getImageUrl()))
                 .collect(Collectors.toList());
 
-        // CommunityCommentResponseDto 리스트 생성
         List<CommunityCommentResponseDto> comments = communityCommentRepository.findByCommunity(community)
                 .stream()
                 .map(comment -> new CommunityCommentResponseDto(
@@ -85,22 +81,18 @@ public class CommunityService {
                         comment.getUser().getUserId().equals(userId)))
                 .collect(Collectors.toList());
 
-        // 좋아요 수 및 상태 계산
         long likeCount = communityLikeRepository.countByCommunity(community);
         boolean isLikedByUser = communityLikeRepository.findByUserAndCommunity(
                 userRepository.findById(userId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found")),
                 community
         ).isPresent();
 
-        // 태그 리스트 생성
         List<TagResponseDto> tags = community.getTags().stream()
                 .map(tag -> new TagResponseDto(tag.getTagId(), tag.getName()))
                 .collect(Collectors.toList());
 
-        // 소유 여부 확인
         boolean isOwner = community.getUser().getUserId().equals(userId);
 
-        // CommunityFullResponseDto 생성 및 반환
         return new CommunityFullResponseDto(
                 communityDto,
                 images,
@@ -108,7 +100,7 @@ public class CommunityService {
                 likeCount,
                 isLikedByUser,
                 isOwner,
-                tags // 태그 추가
+                tags
         );
     }
 
@@ -168,12 +160,10 @@ public class CommunityService {
             long likeCount = communityLikeRepository.countByCommunity(community);
             long commentCount = communityCommentRepository.countByCommunity(community);
 
-            // 태그 변환
             List<TagResponseDto> tags = community.getTags().stream()
                     .map(tag -> new TagResponseDto(tag.getTagId(), tag.getName()))
                     .collect(Collectors.toList());
 
-            // 좋아요 여부 확인
             boolean isLikedByUser = communityLikeRepository.findByUserAndCommunity(
                     userRepository.findById(userId).orElse(null),
                     community
@@ -191,10 +181,10 @@ public class CommunityService {
                     community.getUpdatedAt(),
                     community.getImageMappings().stream()
                             .map(mapping -> mapping.getCommunityImage().getImageUrl())
-                            .collect(Collectors.toList()), // imageUrls
+                            .collect(Collectors.toList()),
                     likeCount,
                     commentCount,
-                    tags // 추가된 태그
+                    tags
             );
         }).collect(Collectors.toList());
     }
