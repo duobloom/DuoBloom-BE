@@ -87,4 +87,29 @@ public class BoardController {
         boardService.deleteBoard(user, boardId);
         return ResponseEntity.noContent().build();
     }
+
+    @Operation(summary = "게시글 좋아요", description = "게시글에 좋아요를 추가합니다.")
+    @PostMapping("/{boardId}/like")
+    public ResponseEntity<Void> likeBoard(@PathVariable Integer boardId, HttpSession session) {
+        Long userId = (Long) session.getAttribute("userId");
+        if (userId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        User user = userService.findById(userId);
+        boardService.likeBoard(user, boardId);
+        return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
+
+    @Operation(summary = "게시글 좋아요 취소", description = "게시글에 좋아요를 취소합니다.")
+    @DeleteMapping("/{boardId}/like")
+    public ResponseEntity<Void> unlikeBoard(@PathVariable Integer boardId, HttpSession session) {
+        Long userId = (Long) session.getAttribute("userId");
+        if (userId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        User user = userService.findById(userId);
+        boardService.unlikeBoard(user, boardId);
+        return ResponseEntity.noContent().build();
+    }
+
 }
