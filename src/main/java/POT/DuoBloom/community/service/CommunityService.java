@@ -1,5 +1,7 @@
 package POT.DuoBloom.community.service;
 
+import POT.DuoBloom.common.exception.CustomException;
+import POT.DuoBloom.common.exception.ErrorCode;
 import POT.DuoBloom.community.dto.request.CommunityRequestDto;
 import POT.DuoBloom.community.dto.response.*;
 import POT.DuoBloom.community.entity.*;
@@ -31,7 +33,7 @@ public class CommunityService {
     @Transactional
     public CommunityResponseDto createCommunity(CommunityRequestDto requestDto, Long userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
         Community community = new Community(requestDto.getContent(), requestDto.getType(), user);
 
@@ -133,10 +135,10 @@ public class CommunityService {
     @Transactional
     public void deleteCommunity(Long communityId, Long userId) {
         Community community = communityRepository.findById(communityId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Community not found"));
+                .orElseThrow(() -> new CustomException(ErrorCode.COMMUNITY_NOT_FOUND));
 
         if (!community.getUser().getUserId().equals(userId)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You do not have permission to delete this post");
+            throw new CustomException(ErrorCode.FORBIDDEN_ACCESS);
         }
 
         communityRepository.deleteById(communityId);
