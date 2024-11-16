@@ -4,7 +4,6 @@ import POT.DuoBloom.common.exception.CustomException;
 import POT.DuoBloom.common.exception.ErrorCode;
 import POT.DuoBloom.domain.policy.dto.request.ScrapRequestDto;
 import POT.DuoBloom.domain.policy.dto.response.PolicyListDto;
-import POT.DuoBloom.domain.policy.dto.response.ScrapResponseDto;
 import POT.DuoBloom.domain.policy.service.PolicyScrapService;
 import POT.DuoBloom.domain.user.entity.User;
 import POT.DuoBloom.domain.user.service.UserService;
