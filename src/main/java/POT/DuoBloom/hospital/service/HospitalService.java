@@ -70,6 +70,7 @@ public class HospitalService {
         HospitalListDto hospitalListDto = new HospitalListDto();
         hospitalListDto.setHospitalId(hospital.getHospitalId());
         hospitalListDto.setHospitalName(hospital.getHospitalName());
+        hospitalListDto.setImageUrl(hospital.getImageUrl());
         hospitalListDto.setRegion(getRegionName(hospital.getRegion()));
         hospitalListDto.setMiddle(getMiddleName(hospital.getMiddle()));
         hospitalListDto.setDetail(getDetailName(hospital.getDetail()));
@@ -93,6 +94,7 @@ public class HospitalService {
         HospitalDto hospitalDto = new HospitalDto();
         hospitalDto.setHospitalId(hospital.getHospitalId());
         hospitalDto.setHospitalName(hospital.getHospitalName());
+        hospitalDto.setImageUrl(hospital.getImageUrl());
         hospitalDto.setRegion(getRegionName(hospital.getRegion()));
         hospitalDto.setMiddle(getMiddleName(hospital.getMiddle()));
         hospitalDto.setDetail(getDetailName(hospital.getDetail()));

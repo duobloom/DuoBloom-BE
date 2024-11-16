@@ -12,6 +12,7 @@ import java.util.List;
 public class HospitalListDto {
     private Integer hospitalId;
     private String hospitalName;
+    private String imageUrl;
     private String region;
     private String middle;
     private String detail;
