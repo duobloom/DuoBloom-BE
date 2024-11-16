@@ -3,6 +3,8 @@ package POT.DuoBloom.board.controller;
 import POT.DuoBloom.board.dto.BoardRequestDto;
 import POT.DuoBloom.board.dto.BoardResponseDto;
 import POT.DuoBloom.board.service.BoardService;
+import POT.DuoBloom.common.exception.CustomException;
+import POT.DuoBloom.common.exception.ErrorCode;
 import POT.DuoBloom.user.entity.User;
 import POT.DuoBloom.user.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -54,9 +56,12 @@ public class BoardController {
     public ResponseEntity<BoardResponseDto> getBoardById(@PathVariable Integer boardId, HttpSession session) {
         Long userId = (Long) session.getAttribute("userId");
         if (userId == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            throw new CustomException(ErrorCode.UNAUTHORIZED_ACCESS);
         }
         User user = userService.findById(userId);
+        if (user == null) {
+            throw new CustomException(ErrorCode.USER_NOT_FOUND);
+        }
         BoardResponseDto board = boardService.getBoardDetailsById(boardId, user);
         return ResponseEntity.ok(board);
     }
@@ -88,14 +93,16 @@ public class BoardController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(summary = "게시글 좋아요", description = "게시글에 좋아요를 추가합니다.")
     @PostMapping("/{boardId}/like")
     public ResponseEntity<Void> likeBoard(@PathVariable Integer boardId, HttpSession session) {
         Long userId = (Long) session.getAttribute("userId");
         if (userId == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            throw new CustomException(ErrorCode.UNAUTHORIZED_ACCESS);
         }
         User user = userService.findById(userId);
+        if (user == null) {
+            throw new CustomException(ErrorCode.USER_NOT_FOUND);
+        }
         boardService.likeBoard(user, boardId);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
