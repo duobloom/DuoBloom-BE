@@ -63,7 +63,6 @@ public class User implements Serializable {
     }
 
     public void updateProfilePictureUrl(String profilePictureUrl) { this.profilePictureUrl = profilePictureUrl; }
-    public void updateUserId(Long userId) { this.userId = userId; } // 테스트용
     public void updateNickName(String nickname) { this.nickname = nickname; }
     public void updateEmail(String email) { this.email = email; }
     public void updatePassword(String password) { this.password = password; }
