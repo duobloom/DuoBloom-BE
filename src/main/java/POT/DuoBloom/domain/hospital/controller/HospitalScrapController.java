@@ -26,7 +26,7 @@ public class HospitalScrapController {
     public void scrapHospital(HttpSession session, @RequestBody ScrapRequestDto requestDto) {
         Long userId = (Long) session.getAttribute("userId");
         if (userId == null) {
-            throw new CustomException(ErrorCode.SESSION_USER_NOT_FOUND); // 세션 사용자 ID 없음
+            throw new CustomException(ErrorCode.SESSION_USER_NOT_FOUND);
         }
 
         User user = userService.findById(userId);
@@ -35,7 +35,7 @@ public class HospitalScrapController {
             hospitalScrapService.scrapHospital(user, requestDto.getHospitalId());
         } catch (CustomException e) {
             if (e.getErrorCode() == ErrorCode.ALREADY_SCRAPPED) {
-                throw new CustomException(ErrorCode.ALREADY_SCRAPPED); // 중복 스크랩 요청 처리
+                throw new CustomException(ErrorCode.ALREADY_SCRAPPED);
             }
             throw e;
         }

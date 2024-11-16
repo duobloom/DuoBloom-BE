@@ -237,26 +237,24 @@ public class BoardService {
     // 좋아요 추가
     @Transactional
     public void likeBoard(User user, Integer boardId) {
-        Board board = boardRepository.findById(boardId)
-                .orElseThrow(() -> new CustomException(ErrorCode.BOARD_NOT_FOUND));
-
         if (isBoardLikedByUser(user, boardId)) {
             throw new CustomException(ErrorCode.ALREADY_LIKED);
         }
 
+        Board board = boardRepository.findById(boardId)
+                .orElseThrow(() -> new CustomException(ErrorCode.BOARD_NOT_FOUND));
         likeRepository.save(new BoardLike(user, board));
     }
 
     // 좋아요 취소
     @Transactional
     public void unlikeBoard(User user, Integer boardId) {
-        Board board = boardRepository.findById(boardId)
-                .orElseThrow(() -> new CustomException(ErrorCode.BOARD_NOT_FOUND));
-
         if (!isBoardLikedByUser(user, boardId)) {
             throw new CustomException(ErrorCode.NOT_LIKED);
         }
 
+        Board board = boardRepository.findById(boardId)
+                .orElseThrow(() -> new CustomException(ErrorCode.BOARD_NOT_FOUND));
         likeRepository.deleteByUserAndBoard(user, board);
     }
 
@@ -269,6 +267,20 @@ public class BoardService {
         BoardComment boardComment = new BoardComment(user, board, content);
         return boardCommentRepository.save(boardComment);
     }
+
+    @Transactional
+    public BoardComment updateComment(Long commentId, User user, String newContent) {
+        BoardComment boardComment = boardCommentRepository.findById(commentId)
+                .orElseThrow(() -> new CustomException(ErrorCode.COMMENT_NOT_FOUND));
+
+        if (!boardComment.getUser().equals(user)) {
+            throw new CustomException(ErrorCode.FORBIDDEN_ACCESS);
+        }
+
+        boardComment.updateContent(newContent);
+        return boardCommentRepository.save(boardComment);
+    }
+
 
     // 댓글 삭제
     @Transactional
