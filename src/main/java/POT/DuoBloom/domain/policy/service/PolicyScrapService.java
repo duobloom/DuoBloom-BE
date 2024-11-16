@@ -55,6 +55,7 @@ public class PolicyScrapService {
         policyListDto.setDetail(regionConversionService.convertDetailCodeToName(policy.getDetail()));
         policyListDto.setStartDate(policy.getStartDate());
         policyListDto.setEndDate(policy.getEndDate());
+        policyListDto.setImageUrl(policy.getImageUrl());
 
         // KeywordMappings 변환
         List<KeywordsMappingDto> keywordMappings = policy.getPolicyMappings().stream()

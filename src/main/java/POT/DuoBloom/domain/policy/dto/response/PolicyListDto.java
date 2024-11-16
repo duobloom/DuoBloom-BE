@@ -19,5 +19,6 @@ public class PolicyListDto {
     private String detail;
     private LocalDate startDate;
     private LocalDate endDate;
+    private String imageUrl;
     private List<KeywordsMappingDto> keywordMappings;
 }
