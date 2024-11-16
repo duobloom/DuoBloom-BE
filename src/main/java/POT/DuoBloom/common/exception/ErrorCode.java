@@ -36,7 +36,7 @@ public enum ErrorCode {
     NOT_LIKED(400, "좋아요를 누르지 않은 게시물입니다."),
     INVALID_COMMUNITY_TYPE(400, "잘못된 커뮤니티 타입입니다."),
     TAG_NOT_FOUND(404, "태그를 찾을 수 없습니다."),
-    COMMUNITY_NOT_FOUNT(404, "커뮤니티를 찾을 수 없습니다."),
+    COMMUNITY_NOT_FOUND(404, "커뮤니티를 찾을 수 없습니다."),
 
     // comment
     COMMENT_NOT_FOUND(404, "댓글을 찾을 수 없습니다."),
