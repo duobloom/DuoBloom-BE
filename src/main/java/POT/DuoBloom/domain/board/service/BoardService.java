@@ -226,14 +226,22 @@ public class BoardService {
         boardRepository.delete(board);
     }
 
+    // 특정 사용자가 특정 게시물에 좋아요를 눌렀는지 확인
+    @Transactional(readOnly = true)
+    public boolean isBoardLikedByUser(User user, Integer boardId) {
+        Board board = boardRepository.findById(boardId)
+                .orElseThrow(() -> new CustomException(ErrorCode.BOARD_NOT_FOUND));
+        return likeRepository.existsByUserAndBoard(user, board);
+    }
+
     // 좋아요 추가
     @Transactional
     public void likeBoard(User user, Integer boardId) {
         Board board = boardRepository.findById(boardId)
                 .orElseThrow(() -> new CustomException(ErrorCode.BOARD_NOT_FOUND));
 
-        if (likeRepository.existsByUserAndBoard(user, board)) {
-            throw new IllegalStateException("이미 좋아요를 누른 게시물입니다.");
+        if (isBoardLikedByUser(user, boardId)) {
+            throw new CustomException(ErrorCode.ALREADY_LIKED);
         }
 
         likeRepository.save(new BoardLike(user, board));
@@ -245,12 +253,13 @@ public class BoardService {
         Board board = boardRepository.findById(boardId)
                 .orElseThrow(() -> new CustomException(ErrorCode.BOARD_NOT_FOUND));
 
-        if (!likeRepository.existsByUserAndBoard(user, board)) {
-            throw new IllegalStateException("좋아요를 누르지 않은 게시물입니다.");
+        if (!isBoardLikedByUser(user, boardId)) {
+            throw new CustomException(ErrorCode.NOT_LIKED);
         }
 
         likeRepository.deleteByUserAndBoard(user, board);
     }
+
 
     // 댓글 추가
     @Transactional
