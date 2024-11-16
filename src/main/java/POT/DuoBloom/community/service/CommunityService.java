@@ -209,8 +209,6 @@ public class CommunityService {
         return result;
     }
 
-
-
     // 테스트용
     @Transactional(readOnly = true)
     public List<CommunityListResponseDto> getCommunityList(Long userId) {
