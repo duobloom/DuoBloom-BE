@@ -24,4 +24,5 @@ public class CommunityListResponseDto {
     private List<String> imageUrls;
     private long likeCount;
     private long commentCount;
+    private List<TagResponseDto> tags;
 }

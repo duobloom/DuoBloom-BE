@@ -16,4 +16,5 @@ public class CommunityFullResponseDto {
     private long likeCount;
     private boolean isLikedByUser;
     private boolean isOwner;
+    private List<TagResponseDto> tags;
 }
