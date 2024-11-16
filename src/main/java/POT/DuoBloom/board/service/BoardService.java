@@ -82,7 +82,7 @@ public class BoardService {
                         boardCommentRepository.countByBoard_BoardId(board.getBoardId()),
                         board.getUser().getNickname(),
                         board.getUser().getProfilePictureUrl(),
-                        board.getUser().getUserId().equals(currentUserId) // 로그인된 사용자가 작성자인지 확인
+                        board.getUser().getUserId().equals(currentUserId)
                 ))
                 .collect(Collectors.toList());
     }
@@ -92,6 +92,7 @@ public class BoardService {
 
     @Transactional(readOnly = true)
     public BoardResponseDto getBoardDetailsById(Integer boardId, User currentUser) {
+        Long currentUserId = currentUser.getUserId();
         Board board = boardRepository.findById(boardId)
                 .orElseThrow(() -> new IllegalStateException("해당 글이 존재하지 않습니다."));
         List<BoardComment> comments = boardCommentRepository.findByBoard_BoardId(boardId);
@@ -102,9 +103,10 @@ public class BoardService {
                         comment.getUser().getProfilePictureUrl(),
                         comment.getContent(),
                         comment.getCreatedAt(),
-                        comment.getUser().equals(currentUser)
+                        comment.getUser().getUserId().equals(currentUserId)
                 ))
                 .collect(Collectors.toList());
+        boolean isMine = board.getUser().getUserId().equals(currentUserId);
 
         return new BoardResponseDto(
                 board.getBoardId(),
@@ -116,9 +118,10 @@ public class BoardService {
                 boardCommentRepository.countByBoard_BoardId(board.getBoardId()),
                 board.getUser().getNickname(),
                 board.getUser().getProfilePictureUrl(),
-                board.getUser().equals(currentUser)
+                isMine
         );
     }
+
 
 
 
