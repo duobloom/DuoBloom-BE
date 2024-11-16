@@ -6,7 +6,6 @@ import POT.DuoBloom.community.dto.response.CommunityCommentResponseDto;
 import POT.DuoBloom.community.dto.response.CommunityFullResponseDto;
 import POT.DuoBloom.community.dto.response.CommunityListResponseDto;
 import POT.DuoBloom.community.dto.response.CommunityResponseDto;
-import POT.DuoBloom.community.entity.Type;
 import POT.DuoBloom.community.service.CommunityCommentService;
 import POT.DuoBloom.community.service.CommunityService;
 import POT.DuoBloom.user.repository.UserRepository;
@@ -77,6 +76,21 @@ public class CommunityController {
         List<CommunityListResponseDto> response = communityService.getTopCommunitiesByType(userId);
         return ResponseEntity.ok(response);
     }
+
+    @Operation(summary = "타입별 게시글 조회", description = "주어진 타입에 해당하는 모든 게시글을 조회합니다.")
+    @GetMapping("/type/{type}")
+    public ResponseEntity<List<CommunityListResponseDto>> getCommunitiesByType(
+            @PathVariable String type,
+            @SessionAttribute(name = "userId", required = false) Long userId) {
+
+        if (userId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        List<CommunityListResponseDto> responseDtos = communityService.getCommunitiesByType(type, userId);
+        return ResponseEntity.ok(responseDtos);
+    }
+
 
 
 //    @Operation(summary = "커뮤니티 게시글 목록 조회", description = "모든 커뮤니티 게시글을 조회합니다.")
