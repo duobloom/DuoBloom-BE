@@ -64,16 +64,17 @@ public class BoardController {
     @Operation(summary = "게시글 수정", description = "게시글 ID로 특정 게시글을 수정합니다.")
     @PutMapping("/{boardId}")
     public ResponseEntity<BoardResponseDto> updateBoard(@PathVariable Integer boardId,
-                                                        @RequestBody String content,
+                                                        @RequestBody BoardRequestDto boardRequestDto,
                                                         HttpSession session) {
         Long userId = (Long) session.getAttribute("userId");
         if (userId == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
         User user = userService.findById(userId);
-        BoardResponseDto updatedBoard = boardService.updateBoard(user, boardId, content);
+        BoardResponseDto updatedBoard = boardService.updateBoard(user, boardId, boardRequestDto);
         return ResponseEntity.ok(updatedBoard);
     }
+
 
     @Operation(summary = "게시글 삭제", description = "게시글 ID로 특정 게시글을 삭제합니다.")
     @DeleteMapping("/{boardId}")

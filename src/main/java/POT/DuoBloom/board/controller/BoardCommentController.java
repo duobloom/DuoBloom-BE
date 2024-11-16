@@ -40,7 +40,7 @@ public class BoardCommentController {
         }
         User user = userService.findById(userId);
         BoardComment boardComment = boardService.addComment(user, boardId, content);
-        // isMine 항상 true로 설정하여 현재 사용자가 댓글 작성자임을 표시
+        
         BoardCommentDto responseDto = new BoardCommentDto(
                 boardComment.getId(),
                 user.getNickname(),
