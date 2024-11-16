@@ -3,7 +3,7 @@ package POT.DuoBloom.domain.hospital.controller;
 import POT.DuoBloom.common.exception.CustomException;
 import POT.DuoBloom.common.exception.ErrorCode;
 import POT.DuoBloom.domain.hospital.dto.request.ScrapRequestDto;
-import POT.DuoBloom.domain.hospital.dto.response.ScrapResponseDto;
+import POT.DuoBloom.domain.hospital.dto.response.HospitalListDto;
 import POT.DuoBloom.domain.hospital.service.HospitalScrapService;
 import POT.DuoBloom.domain.user.entity.User;
 import POT.DuoBloom.domain.user.service.UserService;
@@ -34,15 +34,14 @@ public class HospitalScrapController {
 
     // 스크랩한 병원 조회
     @GetMapping
-    public List<ScrapResponseDto> getHospitalScraps(HttpSession session) {
+    public List<HospitalListDto> getHospitalScraps(HttpSession session) {
         Long userId = (Long) session.getAttribute("userId");
         if (userId == null) {
             throw new CustomException(ErrorCode.SESSION_USER_NOT_FOUND);
         }
         User user = userService.findById(userId);
-        return hospitalScrapService.getHospitalScraps(user);
+        return hospitalScrapService.getHospitalScraps(user); // 반환 타입 변경
     }
-
 
     // 병원 스크랩 취소
     @DeleteMapping
