@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.Map;
 
 @Slf4j
@@ -160,4 +161,20 @@ public class UserController {
             return ResponseEntity.status(500).body("서버 에러 발생. 나중에 다시 시도해주세요.");
         }
     }
+
+    @Operation(summary = "캘린더 페이지", description = "로그인한 사용자의 회원가입 날짜를 반환합니다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "회원가입 날짜 조회 성공"),
+            @ApiResponse(responseCode = "401", description = "로그인이 필요합니다.")
+    })
+    @GetMapping("/calendar")
+    public ResponseEntity<SignupDateDto> getSignupDate(HttpSession session) {
+        Long userId = (Long) session.getAttribute("userId");
+        if (userId == null) {
+            return ResponseEntity.status(401).build();
+        }
+        LocalDateTime signupDate = userService.getSignupDate(userId);
+        return ResponseEntity.ok(new SignupDateDto(signupDate));
+    }
+
 }
