@@ -7,6 +7,7 @@ import POT.DuoBloom.emotion.service.EmotionService;
 import POT.DuoBloom.feed.dto.FeedResponseDto;
 import POT.DuoBloom.question.dto.QuestionWithAnswersDto;
 import POT.DuoBloom.question.service.QuestionService;
+import POT.DuoBloom.user.dto.FeedUserProfileDto;
 import POT.DuoBloom.user.entity.User;
 import POT.DuoBloom.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -15,7 +16,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -37,6 +37,22 @@ public class FeedService {
             throw new IllegalStateException("커플 연결이 필요합니다.");
         }
 
+        // 사용자 프로필 생성
+        FeedUserProfileDto userProfile = new FeedUserProfileDto(
+                user.getNickname(),
+                user.getProfilePictureUrl(),
+                user.getBirth(),
+                user.getBalance()
+        );
+
+        // 커플 사용자 프로필 생성
+        FeedUserProfileDto coupleProfile = new FeedUserProfileDto(
+                coupleUser.getNickname(),
+                coupleUser.getProfilePictureUrl(),
+                coupleUser.getBirth(),
+                coupleUser.getBalance()
+        );
+
         // Emotion 조회 및 작성자 정보 설정
         List<EmotionResponseDto> userEmotions = emotionService.findByFeedDateAndUser(feedDate, user, userId);
         List<EmotionResponseDto> coupleEmotions = emotionService.findByFeedDateAndUser(feedDate, coupleUser, userId);
@@ -45,12 +61,13 @@ public class FeedService {
         List<BoardResponseDto> userBoards = boardService.getBoardsByDateAndUser(feedDate, user, userId);
         List<BoardResponseDto> coupleBoards = boardService.getBoardsByDateAndUser(feedDate, coupleUser, userId);
 
-        // Question + Answer 조
+        // Question + Answer 조회
         List<QuestionWithAnswersDto> questionsWithAnswers = questionService.getQuestionsWithAnswerStatus(feedDate, userId);
-
 
         return new FeedResponseDto(
                 feedDate,
+                userProfile,
+                coupleProfile,
                 userEmotions,
                 coupleEmotions,
                 userBoards,
