@@ -1,4 +1,4 @@
-package POT.DuoBloom.community.dto;
+package POT.DuoBloom.community.dto.response;
 
 import POT.DuoBloom.community.entity.Type;
 import lombok.AllArgsConstructor;

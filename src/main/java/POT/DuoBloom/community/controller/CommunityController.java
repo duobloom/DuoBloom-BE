@@ -1,6 +1,11 @@
 package POT.DuoBloom.community.controller;
 
-import POT.DuoBloom.community.dto.*;
+import POT.DuoBloom.community.dto.request.CommunityCommentRequestDto;
+import POT.DuoBloom.community.dto.request.CommunityRequestDto;
+import POT.DuoBloom.community.dto.response.CommunityCommentResponseDto;
+import POT.DuoBloom.community.dto.response.CommunityFullResponseDto;
+import POT.DuoBloom.community.dto.response.CommunityListResponseDto;
+import POT.DuoBloom.community.dto.response.CommunityResponseDto;
 import POT.DuoBloom.community.service.CommunityCommentService;
 import POT.DuoBloom.community.service.CommunityService;
 import POT.DuoBloom.user.repository.UserRepository;
