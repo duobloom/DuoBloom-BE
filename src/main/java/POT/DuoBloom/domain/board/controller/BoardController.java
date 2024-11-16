@@ -24,12 +24,12 @@ public class BoardController {
     private final BoardService boardService;
     private final UserService userService;
 
-    @Operation(summary = "전체 게시글 조회", description = "로그인한 사용자와 그의 커플의 게시글을 조회합니다.")
+    @Operation(summary = "전체 게시글 조회", description = "로그인한 사용자와 상대방 게시글을 조회합니다.")
     @GetMapping
     public ResponseEntity<List<BoardResponseDto>> getAllBoards(HttpSession session) {
         Long userId = (Long) session.getAttribute("userId");
         if (userId == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            throw new CustomException(ErrorCode.UNAUTHORIZED_ACCESS);
         }
         User user = userService.findById(userId);
         List<BoardResponseDto> boards = boardService.getAllBoards(user);
@@ -42,7 +42,7 @@ public class BoardController {
                                                         HttpSession session) {
         Long userId = (Long) session.getAttribute("userId");
         if (userId == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            throw new CustomException(ErrorCode.UNAUTHORIZED_ACCESS);
         }
         User user = userService.findById(userId);
         BoardResponseDto response = boardService.createBoard(user, boardRequestDto.getContent(), boardRequestDto.getPhotoUrls());
@@ -57,9 +57,6 @@ public class BoardController {
             throw new CustomException(ErrorCode.UNAUTHORIZED_ACCESS);
         }
         User user = userService.findById(userId);
-        if (user == null) {
-            throw new CustomException(ErrorCode.USER_NOT_FOUND);
-        }
         BoardResponseDto board = boardService.getBoardDetailsById(boardId, user);
         return ResponseEntity.ok(board);
     }
@@ -71,7 +68,7 @@ public class BoardController {
                                                         HttpSession session) {
         Long userId = (Long) session.getAttribute("userId");
         if (userId == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            throw new CustomException(ErrorCode.UNAUTHORIZED_ACCESS);
         }
         User user = userService.findById(userId);
         BoardResponseDto updatedBoard = boardService.updateBoard(user, boardId, boardRequestDto);
@@ -84,13 +81,14 @@ public class BoardController {
     public ResponseEntity<Void> deleteBoard(@PathVariable Integer boardId, HttpSession session) {
         Long userId = (Long) session.getAttribute("userId");
         if (userId == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            throw new CustomException(ErrorCode.UNAUTHORIZED_ACCESS);
         }
         User user = userService.findById(userId);
         boardService.deleteBoard(user, boardId);
         return ResponseEntity.noContent().build();
     }
 
+    @Operation(summary = "게시글 좋아요", description = "게시글에 좋아요를 추가합니다.")
     @PostMapping("/{boardId}/like")
     public ResponseEntity<Void> likeBoard(@PathVariable Integer boardId, HttpSession session) {
         Long userId = (Long) session.getAttribute("userId");
@@ -98,11 +96,7 @@ public class BoardController {
             throw new CustomException(ErrorCode.UNAUTHORIZED_ACCESS);
         }
         User user = userService.findById(userId);
-        if (user == null) {
-            throw new CustomException(ErrorCode.USER_NOT_FOUND);
-        }
 
-        // 이미 좋아요를 눌렀는지 확인
         if (boardService.isBoardLikedByUser(user, boardId)) {
             throw new CustomException(ErrorCode.ALREADY_LIKED);
         }
@@ -116,11 +110,10 @@ public class BoardController {
     public ResponseEntity<Void> unlikeBoard(@PathVariable Integer boardId, HttpSession session) {
         Long userId = (Long) session.getAttribute("userId");
         if (userId == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            throw new CustomException(ErrorCode.UNAUTHORIZED_ACCESS);
         }
         User user = userService.findById(userId);
 
-        // 좋아요를 누르지 않은 게시물인지 확인
         if (!boardService.isBoardLikedByUser(user, boardId)) {
             throw new CustomException(ErrorCode.NOT_LIKED);
         }
