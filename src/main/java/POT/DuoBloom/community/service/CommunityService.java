@@ -209,8 +209,6 @@ public class CommunityService {
         return result;
     }
 
-
-
     // 테스트용
     @Transactional(readOnly = true)
     public List<CommunityListResponseDto> getCommunityList(Long userId) {
@@ -248,6 +246,44 @@ public class CommunityService {
             );
         }).collect(Collectors.toList());
     }
+
+    @Transactional(readOnly = true)
+    public List<CommunityListResponseDto> getCommunitiesByType(String type, Long userId) {
+        List<Community> communities = communityRepository.findByType(Type.valueOf(type.toUpperCase()));
+
+        return communities.stream().map(community -> {
+            long likeCount = communityLikeRepository.countByCommunity(community);
+            long commentCount = communityCommentRepository.countByCommunity(community);
+
+            List<TagResponseDto> tags = community.getTags().stream()
+                    .map(tag -> new TagResponseDto(tag.getTagId(), tag.getName()))
+                    .collect(Collectors.toList());
+
+            boolean isLikedByUser = communityLikeRepository.findByUserAndCommunity(
+                    userRepository.findById(userId).orElse(null),
+                    community
+            ).isPresent();
+
+            return new CommunityListResponseDto(
+                    community.getCommunityId(),
+                    community.getContent(),
+                    community.getType(),
+                    community.getUser().getNickname(),
+                    community.getUser().getProfilePictureUrl(),
+                    community.getUser().getUserId().equals(userId),
+                    isLikedByUser,
+                    community.getCreatedAt(),
+                    community.getUpdatedAt(),
+                    community.getImageMappings().stream()
+                            .map(mapping -> mapping.getCommunityImage().getImageUrl())
+                            .collect(Collectors.toList()),
+                    likeCount,
+                    commentCount,
+                    tags
+            );
+        }).collect(Collectors.toList());
+    }
+
 
 
 }

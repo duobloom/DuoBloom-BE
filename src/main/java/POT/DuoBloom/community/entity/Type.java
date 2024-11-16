@@ -1,5 +1,5 @@
 package POT.DuoBloom.community.entity;
 
 public enum Type {
-    mental, mentoring, policy, hospital, free
+    MENTAL, MENTORING, POLICY, HOSPITAL, FREE
 }

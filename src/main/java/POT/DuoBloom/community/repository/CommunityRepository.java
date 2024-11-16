@@ -24,6 +24,9 @@ public interface CommunityRepository extends JpaRepository<Community, Long> {
             "ORDER BY COUNT(cl) DESC, c.communityId DESC")
     List<Community> findTopByType(@Param("type") Type type, Pageable pageable);
 
+    List<Community> findByType(Type type);
+
+
 }
 
 
