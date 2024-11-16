@@ -13,6 +13,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.NoSuchElementException;
 
 @Slf4j
@@ -132,7 +133,12 @@ public class UserService {
         userRepository.save(user);
     }
 
-
+    @Transactional(readOnly = true)
+    public LocalDateTime getSignupDate(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("유저를 찾을 수 없습니다."));
+        return user.getCreatedAt();
+    }
 
 
 }
