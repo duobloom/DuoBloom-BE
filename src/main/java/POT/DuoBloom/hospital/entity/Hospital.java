@@ -45,6 +45,9 @@ public class Hospital {
     @Column(name = "link_url")
     private String linkUrl;
 
+    @Column(name = "image_url")
+    private String imageUrl;
+
     @JsonManagedReference
     @OneToMany(mappedBy = "hospital", cascade = CascadeType.ALL)
     private List<HospitalKeywordsMapping> keywordMappings;
@@ -53,6 +56,9 @@ public class Hospital {
     public void prePersist() {
         if (this.type == null) {
             this.type = HospitalType.BASIC;
+        }
+        if (this.imageUrl == null) {
+            this.imageUrl = "";
         }
     }
 }
