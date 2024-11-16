@@ -101,6 +101,12 @@ public class BoardController {
         if (user == null) {
             throw new CustomException(ErrorCode.USER_NOT_FOUND);
         }
+
+        // 이미 좋아요를 눌렀는지 확인
+        if (boardService.isBoardLikedByUser(user, boardId)) {
+            throw new CustomException(ErrorCode.ALREADY_LIKED);
+        }
+
         boardService.likeBoard(user, boardId);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
@@ -113,8 +119,15 @@ public class BoardController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
         User user = userService.findById(userId);
+
+        // 좋아요를 누르지 않은 게시물인지 확인
+        if (!boardService.isBoardLikedByUser(user, boardId)) {
+            throw new CustomException(ErrorCode.NOT_LIKED);
+        }
+
         boardService.unlikeBoard(user, boardId);
         return ResponseEntity.noContent().build();
     }
+
 
 }
