@@ -1,5 +1,7 @@
 package POT.DuoBloom.policy.controller;
 
+import POT.DuoBloom.common.exception.CustomException;
+import POT.DuoBloom.common.exception.ErrorCode;
 import POT.DuoBloom.policy.dto.ScrapRequestDto;
 import POT.DuoBloom.policy.dto.ScrapResponseDto;
 import POT.DuoBloom.policy.service.PolicyScrapService;
@@ -24,7 +26,7 @@ public class PolicyScrapController {
     public void scrapPolicy(HttpSession session, @RequestBody ScrapRequestDto requestDto) {
         Long userId = (Long) session.getAttribute("userId");
         if (userId == null) {
-            throw new IllegalArgumentException("세션에 userId가 없습니다.");
+            throw new CustomException(ErrorCode.SESSION_USER_NOT_FOUND);
         }
         User user = userService.findById(userId);
         policyScrapService.scrapPolicy(user, requestDto.getPolicyId());
@@ -35,7 +37,7 @@ public class PolicyScrapController {
     public List<ScrapResponseDto> getPolicyScraps(HttpSession session) {
         Long userId = (Long) session.getAttribute("userId");
         if (userId == null) {
-            throw new IllegalArgumentException("세션에 userId가 없습니다.");
+            throw new CustomException(ErrorCode.SESSION_USER_NOT_FOUND);
         }
         User user = userService.findById(userId);
         return policyScrapService.getPolicyScraps(user);
@@ -46,7 +48,7 @@ public class PolicyScrapController {
     public void unsavePolicy(HttpSession session, @RequestBody ScrapRequestDto requestDto) {
         Long userId = (Long) session.getAttribute("userId");
         if (userId == null) {
-            throw new IllegalArgumentException("세션에 userId가 없습니다.");
+            throw new CustomException(ErrorCode.SESSION_USER_NOT_FOUND);
         }
         User user = userService.findById(userId);
         policyScrapService.unsavePolicy(user, requestDto.getPolicyId());

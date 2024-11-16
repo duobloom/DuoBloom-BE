@@ -1,5 +1,7 @@
 package POT.DuoBloom.policy.service;
 
+import POT.DuoBloom.common.exception.CustomException;
+import POT.DuoBloom.common.exception.ErrorCode;
 import POT.DuoBloom.policy.dto.ScrapResponseDto;
 import POT.DuoBloom.policy.entity.Policy;
 import POT.DuoBloom.policy.entity.PolicyScrap;
@@ -21,7 +23,7 @@ public class PolicyScrapService {
 
     public void scrapPolicy(User user, Integer policyId) {
         Policy policy = policyRepository.findById(policyId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 정책을 찾을 수 없습니다: " + policyId));
+                .orElseThrow(() -> new CustomException(ErrorCode.POLICY_NOT_FOUND));
         PolicyScrap scrap = new PolicyScrap(user, policy);
         policyScrapRepository.save(scrap);
     }
@@ -39,11 +41,12 @@ public class PolicyScrapService {
                 .collect(Collectors.toList());
     }
 
+
     public void unsavePolicy(User user, Integer policyId) {
         Policy policy = policyRepository.findById(policyId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 정책을 찾을 수 없습니다: " + policyId));
+                .orElseThrow(() -> new CustomException(ErrorCode.POLICY_NOT_FOUND));
         PolicyScrap scrap = policyScrapRepository.findByUserAndPolicy(user, policy)
-                .orElseThrow(() -> new IllegalArgumentException("스크랩 내역이 없습니다."));
+                .orElseThrow(() -> new CustomException(ErrorCode.SCRAP_NOT_FOUND));
         policyScrapRepository.delete(scrap);
     }
 }

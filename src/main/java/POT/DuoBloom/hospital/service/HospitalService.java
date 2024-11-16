@@ -1,5 +1,7 @@
 package POT.DuoBloom.hospital.service;
 
+import POT.DuoBloom.common.exception.CustomException;
+import POT.DuoBloom.common.exception.ErrorCode;
 import POT.DuoBloom.hospital.dto.HospitalDto;
 import POT.DuoBloom.hospital.dto.HospitalListDto;
 import POT.DuoBloom.hospital.dto.KeywordsMappingDto;
@@ -33,25 +35,27 @@ public class HospitalService {
     public List<HospitalListDto> findHospitalsByName(String name) {
         List<Hospital> hospitals = hospitalRepository.findByHospitalNameContaining(name);
         if (hospitals.isEmpty()) {
-            return List.of();
+            throw new CustomException(ErrorCode.HOSPITAL_NOT_FOUND);
         }
         return hospitals.stream().map(this::convertToListDto).collect(Collectors.toList());
     }
 
-
     // 병원 필터링
     public List<HospitalListDto> findHospitalsByFilters(Long region, Long middle, Long detail, Keyword keyword, HospitalType type) {
         List<Hospital> hospitals = hospitalRepository.findHospitalsByFilters(region, middle, detail, keyword, type);
+        if (hospitals.isEmpty()) {
+            throw new CustomException(ErrorCode.HOSPITAL_NOT_FOUND);
+        }
         return hospitals.stream().map(this::convertToListDto).collect(Collectors.toList());
     }
-
 
     // 단일 병원 조회
     public HospitalDto getHospitalById(Integer hospitalId) {
         Hospital hospital = hospitalRepository.findById(hospitalId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 병원이 없습니다: " + hospitalId));
+                .orElseThrow(() -> new CustomException(ErrorCode.HOSPITAL_NOT_FOUND));
         return convertToDto(hospital);
     }
+
 
     private String getRegionName(Long code) {
         Region region = regionRepository.findByRegionCode(code);

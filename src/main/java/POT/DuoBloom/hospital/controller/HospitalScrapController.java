@@ -1,9 +1,10 @@
 package POT.DuoBloom.hospital.controller;
 
+import POT.DuoBloom.common.exception.CustomException;
+import POT.DuoBloom.common.exception.ErrorCode;
 import POT.DuoBloom.hospital.dto.ScrapRequestDto;
 import POT.DuoBloom.hospital.dto.ScrapResponseDto;
 import POT.DuoBloom.hospital.service.HospitalScrapService;
-import POT.DuoBloom.hospital.service.HospitalService;
 import POT.DuoBloom.user.entity.User;
 import POT.DuoBloom.user.service.UserService;
 import jakarta.servlet.http.HttpSession;
@@ -25,7 +26,7 @@ public class HospitalScrapController {
     public void scrapHospital(HttpSession session, @RequestBody ScrapRequestDto requestDto) {
         Long userId = (Long) session.getAttribute("userId");
         if (userId == null) {
-            throw new IllegalArgumentException("세션에 userId가 없습니다.");
+            throw new CustomException(ErrorCode.SESSION_USER_NOT_FOUND);
         }
         User user = userService.findById(userId);
         hospitalScrapService.scrapHospital(user, requestDto.getHospitalId());
@@ -36,18 +37,19 @@ public class HospitalScrapController {
     public List<ScrapResponseDto> getHospitalScraps(HttpSession session) {
         Long userId = (Long) session.getAttribute("userId");
         if (userId == null) {
-            throw new IllegalArgumentException("세션에 userId가 없습니다.");
+            throw new CustomException(ErrorCode.SESSION_USER_NOT_FOUND);
         }
         User user = userService.findById(userId);
         return hospitalScrapService.getHospitalScraps(user);
     }
+
 
     // 병원 스크랩 취소
     @DeleteMapping
     public void unsaveHospital(HttpSession session, @RequestBody ScrapRequestDto requestDto) {
         Long userId = (Long) session.getAttribute("userId");
         if (userId == null) {
-            throw new IllegalArgumentException("세션에 userId가 없습니다.");
+            throw new CustomException(ErrorCode.SESSION_USER_NOT_FOUND);
         }
         User user = userService.findById(userId);
         hospitalScrapService.unsaveHospital(user, requestDto.getHospitalId());

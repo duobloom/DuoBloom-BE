@@ -1,5 +1,7 @@
 package POT.DuoBloom.policy.service;
 
+import POT.DuoBloom.common.exception.CustomException;
+import POT.DuoBloom.common.exception.ErrorCode;
 import POT.DuoBloom.policy.dto.PolicyDto;
 import POT.DuoBloom.policy.entity.Keyword;
 import POT.DuoBloom.policy.entity.Policy;
@@ -21,6 +23,9 @@ public class PolicyService {
 
     public List<PolicyDto> getPolicies(Long region, Long middle, Long detail, Keyword keyword) {
         List<Policy> policies = policyRepository.findByRegionAndKeyword(region, middle, detail, keyword);
+        if (policies.isEmpty()) {
+            throw new CustomException(ErrorCode.POLICY_NOT_FOUND);
+        }
         return policies.stream()
                 .map(policy -> new PolicyDto(
                         policy.getPolicyId(),

@@ -1,5 +1,7 @@
 package POT.DuoBloom.hospital.service;
 
+import POT.DuoBloom.common.exception.CustomException;
+import POT.DuoBloom.common.exception.ErrorCode;
 import POT.DuoBloom.hospital.dto.ScrapResponseDto;
 import POT.DuoBloom.hospital.entity.Hospital;
 import POT.DuoBloom.hospital.entity.HospitalScrap;
@@ -21,13 +23,17 @@ public class HospitalScrapService {
 
     public void scrapHospital(User user, Integer hospitalId) {
         Hospital hospital = hospitalRepository.findById(hospitalId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 병원을 찾을 수 없습니다: " + hospitalId));
+                .orElseThrow(() -> new CustomException(ErrorCode.HOSPITAL_NOT_FOUND));
         HospitalScrap scrap = new HospitalScrap(user, hospital);
         hospitalScrapRepository.save(scrap);
     }
 
     public List<ScrapResponseDto> getHospitalScraps(User user) {
-        return hospitalScrapRepository.findByUser(user).stream()
+        List<HospitalScrap> scraps = hospitalScrapRepository.findByUser(user);
+        if (scraps.isEmpty()) {
+            throw new CustomException(ErrorCode.SCRAP_NOT_FOUND);
+        }
+        return scraps.stream()
                 .map(scrap -> {
                     Hospital hospital = scrap.getHospital();
                     return new ScrapResponseDto(
@@ -41,9 +47,10 @@ public class HospitalScrapService {
 
     public void unsaveHospital(User user, Integer hospitalId) {
         Hospital hospital = hospitalRepository.findById(hospitalId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 병원을 찾을 수 없습니다: " + hospitalId));
+                .orElseThrow(() -> new CustomException(ErrorCode.HOSPITAL_NOT_FOUND));
         HospitalScrap scrap = hospitalScrapRepository.findByUserAndHospital(user, hospital)
-                .orElseThrow(() -> new IllegalArgumentException("스크랩 내역이 없습니다."));
+                .orElseThrow(() -> new CustomException(ErrorCode.SCRAP_NOT_FOUND));
         hospitalScrapRepository.delete(scrap);
     }
+
 }
