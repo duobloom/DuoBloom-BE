@@ -40,14 +40,14 @@ public class BoardCommentController {
         }
         User user = userService.findById(userId);
         BoardComment boardComment = boardService.addComment(user, boardId, content);
-        
+
         BoardCommentDto responseDto = new BoardCommentDto(
                 boardComment.getId(),
                 user.getNickname(),
                 user.getProfilePictureUrl(),
                 boardComment.getContent(),
                 boardComment.getCreatedAt(),
-                true // isMine
+                true
         );
         return ResponseEntity.ok(responseDto);
     }

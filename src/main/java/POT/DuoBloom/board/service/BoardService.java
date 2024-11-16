@@ -58,12 +58,12 @@ public class BoardService {
                 boardCommentRepository.countByBoard_BoardId(board.getBoardId()),
                 user.getNickname(),
                 user.getProfilePictureUrl(),
-                true // 현재 사용자가 작성자이므로 true
+                true, // 현재 사용자가 작성자이므로 true
+                false
         );
     }
 
 
-    // 전체 글 조회 수정: 현재 사용자와 연결된 커플의 게시글만 조회
     @Transactional(readOnly = true)
     public List<BoardResponseDto> getAllBoards(User currentUser) {
         Long currentUserId = currentUser.getUserId();
@@ -73,20 +73,25 @@ public class BoardService {
         return boardRepository.findAll().stream()
                 .filter(board -> board.getUser().getUserId().equals(currentUserId) ||
                         (coupleUserId != null && board.getUser().getUserId().equals(coupleUserId)))
-                .map(board -> new BoardResponseDto(
-                        board.getBoardId(),
-                        board.getContent(),
-                        board.getUpdatedAt(),
-                        board.getPhotoUrls(),
-                        null, // 댓글 정보는 여기서 처리하지 않음
-                        likeRepository.countByBoard(board),
-                        boardCommentRepository.countByBoard_BoardId(board.getBoardId()),
-                        board.getUser().getNickname(),
-                        board.getUser().getProfilePictureUrl(),
-                        board.getUser().getUserId().equals(currentUserId)
-                ))
+                .map(board -> {
+                    boolean likedByUser = likeRepository.existsByUserAndBoard(currentUser, board);
+                    return new BoardResponseDto(
+                            board.getBoardId(),
+                            board.getContent(),
+                            board.getUpdatedAt(),
+                            board.getPhotoUrls(),
+                            null, // 댓글 정보는 여기서 처리하지 않음
+                            likeRepository.countByBoard(board),
+                            boardCommentRepository.countByBoard_BoardId(board.getBoardId()),
+                            board.getUser().getNickname(),
+                            board.getUser().getProfilePictureUrl(),
+                            board.getUser().getUserId().equals(currentUserId),
+                            likedByUser // 추가된 필드 설정
+                    );
+                })
                 .collect(Collectors.toList());
     }
+
 
 
 
@@ -94,8 +99,13 @@ public class BoardService {
     @Transactional(readOnly = true)
     public BoardResponseDto getBoardDetailsById(Integer boardId, User currentUser) {
         Long currentUserId = currentUser.getUserId();
+
         Board board = boardRepository.findById(boardId)
                 .orElseThrow(() -> new IllegalStateException("해당 글이 존재하지 않습니다."));
+
+        // 현재 사용자가 좋아요를 눌렀는지 확인
+        boolean likedByUser = likeRepository.existsByUserAndBoard(currentUser, board);
+
         List<BoardComment> comments = boardCommentRepository.findByBoard_BoardId(boardId);
         List<BoardCommentDto> commentDtos = comments.stream()
                 .map(comment -> new BoardCommentDto(
@@ -107,6 +117,7 @@ public class BoardService {
                         comment.getUser().getUserId().equals(currentUserId)
                 ))
                 .collect(Collectors.toList());
+
         boolean isMine = board.getUser().getUserId().equals(currentUserId);
 
         return new BoardResponseDto(
@@ -119,9 +130,11 @@ public class BoardService {
                 boardCommentRepository.countByBoard_BoardId(board.getBoardId()),
                 board.getUser().getNickname(),
                 board.getUser().getProfilePictureUrl(),
-                isMine
+                isMine,
+                likedByUser
         );
     }
+
 
 
 
@@ -130,20 +143,30 @@ public class BoardService {
     public List<BoardResponseDto> getBoardsByDateAndUser(LocalDate date, User targetUser, Long currentUserId) {
         List<Board> boards = boardRepository.findByUserAndFeedDate(targetUser, date);
         return boards.stream()
-                .map(board -> new BoardResponseDto(
-                        board.getBoardId(),
-                        board.getContent(),
-                        board.getUpdatedAt(),
-                        board.getPhotoUrls(),
-                        null, // 댓글 정보는 여기서 처리하지 않음
-                        likeRepository.countByBoard(board),
-                        boardCommentRepository.countByBoard_BoardId(board.getBoardId()),
-                        targetUser.getNickname(),
-                        targetUser.getProfilePictureUrl(),
-                        board.getUser().getUserId().equals(currentUserId) // 로그인된 사용자가 작성자인지 확인
-                ))
+                .map(board -> {
+                    // 현재 사용자가 게시글을 좋아요 눌렀는지 확인
+                    boolean likedByUser = likeRepository.existsByUserAndBoard(
+                            targetUser, // 현재 조회하는 사용자
+                            board
+                    );
+
+                    return new BoardResponseDto(
+                            board.getBoardId(),
+                            board.getContent(),
+                            board.getUpdatedAt(),
+                            board.getPhotoUrls(),
+                            null, // 댓글 정보는 여기서 처리하지 않음
+                            likeRepository.countByBoard(board),
+                            boardCommentRepository.countByBoard_BoardId(board.getBoardId()),
+                            targetUser.getNickname(),
+                            targetUser.getProfilePictureUrl(),
+                            board.getUser().getUserId().equals(currentUserId),
+                            likedByUser // likedByUser 추가
+                    );
+                })
                 .collect(Collectors.toList());
     }
+
 
 
 
@@ -162,15 +185,13 @@ public class BoardService {
             throw new IllegalStateException("해당 글의 작성자만 수정할 수 있습니다.");
         }
 
-        // 내용 수정
         board.updateContent(boardRequestDto.getContent());
-
-        // 기존 photoUrls를 새 요청의 photoUrls로 교체
         board.getPhotoUrls().clear();
         board.getPhotoUrls().addAll(boardRequestDto.getPhotoUrls());
 
         board.updateUpdatedAt(LocalDateTime.now());
         boardRepository.save(board);
+        boolean likedByUser = likeRepository.existsByUserAndBoard(user, board);
 
         // 게시글 업데이트 후 BoardResponseDto로 변환하여 반환
         return new BoardResponseDto(
@@ -183,7 +204,8 @@ public class BoardService {
                 boardCommentRepository.countByBoard_BoardId(board.getBoardId()),
                 board.getUser().getNickname(),
                 board.getUser().getProfilePictureUrl(),
-                true
+                true,
+                likedByUser
         );
     }
 

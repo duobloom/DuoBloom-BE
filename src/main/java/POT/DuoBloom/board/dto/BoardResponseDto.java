@@ -21,4 +21,5 @@ public class BoardResponseDto {
     private String authorNickname;
     private String authorProfilePictureUrl;
     private boolean isMine;
+    private boolean likedByUser;
 }
