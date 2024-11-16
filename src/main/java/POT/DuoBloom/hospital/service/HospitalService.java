@@ -28,6 +28,7 @@ public class HospitalService {
     private final MiddleRepository middleRepository;
     private final DetailRepository detailRepository;
 
+
     // 병원 이름으로 검색
     public List<HospitalListDto> findHospitalsByName(String name) {
         List<Hospital> hospitals = hospitalRepository.findByHospitalNameContaining(name);

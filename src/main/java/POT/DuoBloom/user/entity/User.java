@@ -5,6 +5,8 @@ import POT.DuoBloom.board.entity.BoardLike;
 import POT.DuoBloom.community.entity.Community;
 import POT.DuoBloom.community.entity.CommunityLike;
 import POT.DuoBloom.emotion.entity.Emotion;
+import POT.DuoBloom.hospital.entity.HospitalScrap;
+import POT.DuoBloom.policy.entity.PolicyScrap;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -99,6 +101,12 @@ public class User implements Serializable {
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<CommunityLike> communityLikes = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<HospitalScrap> hospitalScraps = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<PolicyScrap> policyScraps = new ArrayList<>();
 
 
 

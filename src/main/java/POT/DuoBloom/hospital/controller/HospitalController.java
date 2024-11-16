@@ -39,4 +39,6 @@ public class HospitalController {
     public HospitalDto getHospitalById(@PathVariable Integer hospitalId) {
         return hospitalService.getHospitalById(hospitalId);
     }
+
+
 }
