@@ -27,6 +27,11 @@ public class HospitalScrapService {
     public void scrapHospital(User user, Integer hospitalId) {
         Hospital hospital = hospitalRepository.findById(hospitalId)
                 .orElseThrow(() -> new CustomException(ErrorCode.HOSPITAL_NOT_FOUND));
+
+        if (hospitalScrapRepository.findByUserAndHospital(user, hospital).isPresent()) {
+            throw new CustomException(ErrorCode.ALREADY_SCRAPPED);
+        }
+
         HospitalScrap scrap = new HospitalScrap(user, hospital);
         hospitalScrapRepository.save(scrap);
     }
@@ -44,8 +49,10 @@ public class HospitalScrapService {
     public void unsaveHospital(User user, Integer hospitalId) {
         Hospital hospital = hospitalRepository.findById(hospitalId)
                 .orElseThrow(() -> new CustomException(ErrorCode.HOSPITAL_NOT_FOUND));
+
         HospitalScrap scrap = hospitalScrapRepository.findByUserAndHospital(user, hospital)
                 .orElseThrow(() -> new CustomException(ErrorCode.SCRAP_NOT_FOUND));
+
         hospitalScrapRepository.delete(scrap);
     }
 

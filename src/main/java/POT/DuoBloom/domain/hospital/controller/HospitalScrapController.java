@@ -26,10 +26,19 @@ public class HospitalScrapController {
     public void scrapHospital(HttpSession session, @RequestBody ScrapRequestDto requestDto) {
         Long userId = (Long) session.getAttribute("userId");
         if (userId == null) {
-            throw new CustomException(ErrorCode.SESSION_USER_NOT_FOUND);
+            throw new CustomException(ErrorCode.SESSION_USER_NOT_FOUND); // 세션 사용자 ID 없음
         }
+
         User user = userService.findById(userId);
-        hospitalScrapService.scrapHospital(user, requestDto.getHospitalId());
+
+        try {
+            hospitalScrapService.scrapHospital(user, requestDto.getHospitalId());
+        } catch (CustomException e) {
+            if (e.getErrorCode() == ErrorCode.ALREADY_SCRAPPED) {
+                throw new CustomException(ErrorCode.ALREADY_SCRAPPED); // 중복 스크랩 요청 처리
+            }
+            throw e;
+        }
     }
 
     // 스크랩한 병원 조회
@@ -40,17 +49,27 @@ public class HospitalScrapController {
             throw new CustomException(ErrorCode.SESSION_USER_NOT_FOUND);
         }
         User user = userService.findById(userId);
-        return hospitalScrapService.getHospitalScraps(user); // 반환 타입 변경
+        return hospitalScrapService.getHospitalScraps(user);
     }
 
-    // 병원 스크랩 취소
-    @DeleteMapping
-    public void unsaveHospital(HttpSession session, @RequestBody ScrapRequestDto requestDto) {
-        Long userId = (Long) session.getAttribute("userId");
-        if (userId == null) {
-            throw new CustomException(ErrorCode.SESSION_USER_NOT_FOUND);
+        // 병원 스크랩 취소
+        @DeleteMapping
+        public void unsaveHospital(HttpSession session, @RequestBody ScrapRequestDto requestDto) {
+            Long userId = (Long) session.getAttribute("userId");
+            if (userId == null) {
+                throw new CustomException(ErrorCode.SESSION_USER_NOT_FOUND);
+            }
+
+            User user = userService.findById(userId);
+
+            try {
+                hospitalScrapService.unsaveHospital(user, requestDto.getHospitalId());
+            } catch (CustomException e) {
+                if (e.getErrorCode() == ErrorCode.SCRAP_NOT_FOUND) {
+                    throw new CustomException(ErrorCode.SCRAP_NOT_FOUND);
+                }
+                throw e;
+            }
         }
-        User user = userService.findById(userId);
-        hospitalScrapService.unsaveHospital(user, requestDto.getHospitalId());
-    }
 }
+
