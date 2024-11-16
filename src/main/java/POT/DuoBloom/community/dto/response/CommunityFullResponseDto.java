@@ -1,4 +1,4 @@
-package POT.DuoBloom.community.dto;
+package POT.DuoBloom.community.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -16,4 +16,5 @@ public class CommunityFullResponseDto {
     private long likeCount;
     private boolean isLikedByUser;
     private boolean isOwner;
+    private List<TagResponseDto> tags;
 }

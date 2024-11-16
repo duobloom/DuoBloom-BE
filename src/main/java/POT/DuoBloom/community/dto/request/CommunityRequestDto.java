@@ -1,17 +1,18 @@
-package POT.DuoBloom.community.dto;
+package POT.DuoBloom.community.dto.request;
 
 import POT.DuoBloom.community.entity.Type;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class CommunityResponseDto {
-    private Long communityId;
+public class CommunityRequestDto {
     private String content;
     private Type type;
-    private String nickname;
-    private String profilePictureUrl;
+    private List<String> tags;
 }
+

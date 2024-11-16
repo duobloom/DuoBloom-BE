@@ -1,7 +1,7 @@
 package POT.DuoBloom.community.service;
 
-import POT.DuoBloom.community.dto.CommunityCommentRequestDto;
-import POT.DuoBloom.community.dto.CommunityCommentResponseDto;
+import POT.DuoBloom.community.dto.request.CommunityCommentRequestDto;
+import POT.DuoBloom.community.dto.response.CommunityCommentResponseDto;
 import POT.DuoBloom.community.entity.Community;
 import POT.DuoBloom.community.entity.CommunityComment;
 import POT.DuoBloom.community.repository.CommunityCommentRepository;

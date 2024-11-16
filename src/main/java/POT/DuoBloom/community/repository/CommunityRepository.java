@@ -1,6 +1,5 @@
 package POT.DuoBloom.community.repository;
 
-import POT.DuoBloom.community.dto.CommunityResponseDto;
 import POT.DuoBloom.community.entity.Community;
 import POT.DuoBloom.community.entity.Type;
 import org.springframework.data.jpa.repository.JpaRepository;

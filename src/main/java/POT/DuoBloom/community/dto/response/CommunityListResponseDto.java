@@ -1,4 +1,4 @@
-package POT.DuoBloom.community.dto;
+package POT.DuoBloom.community.dto.response;
 
 import POT.DuoBloom.community.entity.Type;
 import lombok.AllArgsConstructor;
@@ -18,9 +18,11 @@ public class CommunityListResponseDto {
     private String nickname;
     private String profilePictureUrl;
     private boolean isOwner;
+    private boolean likedByUser;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private List<String> imageUrls;
     private long likeCount;
     private long commentCount;
+    private List<TagResponseDto> tags;
 }
