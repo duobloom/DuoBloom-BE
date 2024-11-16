@@ -1,5 +1,6 @@
 package POT.DuoBloom.domain.policy.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -45,6 +46,7 @@ public class Policy {
     @Column(name = "policy_host")
     private String policyHost;
 
+    @JsonManagedReference
     @OneToMany(mappedBy = "policy", cascade = CascadeType.ALL)
     private List<PolicyKeywordsMapping> policyMappings;
 }
