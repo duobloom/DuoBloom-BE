@@ -41,7 +41,10 @@ public enum ErrorCode {
 
     // comment
     COMMENT_NOT_FOUND(404, "댓글을 찾을 수 없습니다."),
-    COMMENT_DELETE_FORBIDDEN(403, "댓글 삭제 권한이 없습니다.");
+    COMMENT_DELETE_FORBIDDEN(403, "댓글 삭제 권한이 없습니다."),
+
+    // region
+    REGION_NOT_FOUND(404, "지역을 찾을 수 없습니다.");
 
 
     private final int status;
