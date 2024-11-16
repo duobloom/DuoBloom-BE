@@ -6,6 +6,7 @@ import POT.DuoBloom.community.dto.response.CommunityCommentResponseDto;
 import POT.DuoBloom.community.dto.response.CommunityFullResponseDto;
 import POT.DuoBloom.community.dto.response.CommunityListResponseDto;
 import POT.DuoBloom.community.dto.response.CommunityResponseDto;
+import POT.DuoBloom.community.entity.Type;
 import POT.DuoBloom.community.service.CommunityCommentService;
 import POT.DuoBloom.community.service.CommunityService;
 import POT.DuoBloom.user.repository.UserRepository;
@@ -68,19 +69,29 @@ public class CommunityController {
         return ResponseEntity.ok(response);
     }
 
-    @Operation(summary = "커뮤니티 게시글 목록 조회", description = "모든 커뮤니티 게시글을 조회합니다.")
-    @ApiResponse(responseCode = "200", description = "게시글 목록 조회 성공")
-    @GetMapping
-    public ResponseEntity<List<CommunityListResponseDto>> getCommunityList(
-            @SessionAttribute(name = "userId", required = false) Long userId) {
-
-        if (userId == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-
-        List<CommunityListResponseDto> responseDtos = communityService.getCommunityList(userId);
-        return ResponseEntity.ok(responseDtos);
+    @Operation(summary = "타입별 인기 게시글 조회", description = "모든 타입에 대해 좋아요가 가장 많은 게시글 상위 2개를 반환합니다.")
+    @GetMapping("/top-by-type")
+    public ResponseEntity<List<CommunityListResponseDto>> getTopCommunitiesByType(
+            @SessionAttribute(name = "userId", required = false) Long userId
+    ) {
+        List<CommunityListResponseDto> response = communityService.getTopCommunitiesByType(userId);
+        return ResponseEntity.ok(response);
     }
+
+
+//    @Operation(summary = "커뮤니티 게시글 목록 조회", description = "모든 커뮤니티 게시글을 조회합니다.")
+//    @ApiResponse(responseCode = "200", description = "게시글 목록 조회 성공")
+//    @GetMapping
+//    public ResponseEntity<List<CommunityListResponseDto>> getCommunityList(
+//            @SessionAttribute(name = "userId", required = false) Long userId) {
+//
+//        if (userId == null) {
+//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+//        }
+//
+//        List<CommunityListResponseDto> responseDtos = communityService.getCommunityList(userId);
+//        return ResponseEntity.ok(responseDtos);
+//    }
 
 
     @Operation(summary = "커뮤니티 게시글 수정", description = "특정 커뮤니티 게시글을 수정합니다.")

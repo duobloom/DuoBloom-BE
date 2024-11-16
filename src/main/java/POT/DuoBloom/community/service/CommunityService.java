@@ -7,11 +7,14 @@ import POT.DuoBloom.community.repository.*;
 import POT.DuoBloom.user.entity.User;
 import POT.DuoBloom.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -153,6 +156,63 @@ public class CommunityService {
     }
 
     @Transactional(readOnly = true)
+    public List<CommunityListResponseDto> getTopCommunitiesByType(Long userId) {
+        // 모든 타입 가져오기
+        List<Type> allTypes = List.of(Type.values());
+
+        // 각 타입별로 상위 2개 조회
+        Pageable pageable = PageRequest.of(0, 2);
+        List<CommunityListResponseDto> result = new ArrayList<>();
+
+        for (Type type : allTypes) {
+            List<Community> communities = communityRepository.findTopByType(type, pageable);
+            result.addAll(communities.stream().map(community -> {
+                // 좋아요 수 계산
+                long likeCount = communityLikeRepository.countByCommunity(community);
+
+                // 댓글 수 계산
+                long commentCount = communityCommentRepository.countByCommunity(community);
+
+                // 이미지 URL 리스트 생성
+                List<String> imageUrls = community.getImageMappings().stream()
+                        .map(mapping -> mapping.getCommunityImage().getImageUrl())
+                        .collect(Collectors.toList());
+
+                // 소유 여부 확인
+                boolean isOwner = userId != null && userId.equals(community.getUser().getUserId());
+                boolean likedByUser = communityLikeRepository.findByUserAndCommunity(
+                        userRepository.findById(userId).orElse(null), community).isPresent();
+
+                // 태그 리스트 생성
+                List<TagResponseDto> tags = community.getTags().stream()
+                        .map(tag -> new TagResponseDto(tag.getTagId(), tag.getName()))
+                        .collect(Collectors.toList());
+
+                return new CommunityListResponseDto(
+                        community.getCommunityId(),
+                        community.getContent(),
+                        community.getType(),
+                        community.getUser().getNickname(),
+                        community.getUser().getProfilePictureUrl(),
+                        isOwner,
+                        likedByUser,
+                        community.getCreatedAt(),
+                        community.getUpdatedAt(),
+                        imageUrls,
+                        likeCount,
+                        commentCount,
+                        tags
+                );
+            }).toList());
+        }
+
+        return result;
+    }
+
+
+
+    // 테스트용
+    @Transactional(readOnly = true)
     public List<CommunityListResponseDto> getCommunityList(Long userId) {
         List<Community> communities = communityRepository.findAll();
 
@@ -175,8 +235,8 @@ public class CommunityService {
                     community.getType(),
                     community.getUser().getNickname(),
                     community.getUser().getProfilePictureUrl(),
-                    community.getUser().getUserId().equals(userId), // isOwner
-                    isLikedByUser, // likedByUser 추가
+                    community.getUser().getUserId().equals(userId),
+                    isLikedByUser,
                     community.getCreatedAt(),
                     community.getUpdatedAt(),
                     community.getImageMappings().stream()
