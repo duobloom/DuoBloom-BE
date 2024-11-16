@@ -3,6 +3,8 @@ package POT.DuoBloom.board.controller;
 import POT.DuoBloom.board.dto.BoardCommentDto;
 import POT.DuoBloom.board.entity.BoardComment;
 import POT.DuoBloom.board.service.BoardService;
+import POT.DuoBloom.common.exception.CustomException;
+import POT.DuoBloom.common.exception.ErrorCode;
 import POT.DuoBloom.user.entity.User;
 import POT.DuoBloom.user.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -36,7 +38,7 @@ public class BoardCommentController {
                                                       HttpSession session) {
         Long userId = (Long) session.getAttribute("userId");
         if (userId == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            throw new CustomException(ErrorCode.UNAUTHORIZED_ACCESS);
         }
         User user = userService.findById(userId);
         BoardComment boardComment = boardService.addComment(user, boardId, content);

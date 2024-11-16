@@ -1,11 +1,14 @@
 package POT.DuoBloom.community.controller;
 
+import POT.DuoBloom.common.exception.CustomException;
+import POT.DuoBloom.common.exception.ErrorCode;
 import POT.DuoBloom.community.dto.request.CommunityCommentRequestDto;
 import POT.DuoBloom.community.dto.request.CommunityRequestDto;
 import POT.DuoBloom.community.dto.response.CommunityCommentResponseDto;
 import POT.DuoBloom.community.dto.response.CommunityFullResponseDto;
 import POT.DuoBloom.community.dto.response.CommunityListResponseDto;
 import POT.DuoBloom.community.dto.response.CommunityResponseDto;
+import POT.DuoBloom.community.entity.Type;
 import POT.DuoBloom.community.service.CommunityCommentService;
 import POT.DuoBloom.community.service.CommunityService;
 import POT.DuoBloom.user.repository.UserRepository;
@@ -44,7 +47,7 @@ public class CommunityController {
             HttpSession session) {
 
         if (userId == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            throw new CustomException(ErrorCode.SESSION_USER_NOT_FOUND);
         }
 
         User user = getUserFromSessionOrDb(userId, session);
@@ -92,7 +95,7 @@ public class CommunityController {
     }
 
 
-
+//    TEST 용
 //    @Operation(summary = "커뮤니티 게시글 목록 조회", description = "모든 커뮤니티 게시글을 조회합니다.")
 //    @ApiResponse(responseCode = "200", description = "게시글 목록 조회 성공")
 //    @GetMapping
@@ -122,7 +125,7 @@ public class CommunityController {
             HttpSession session) {
 
         if (userId == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            throw new CustomException(ErrorCode.SESSION_USER_NOT_FOUND);
         }
 
         User user = getUserFromSessionOrDb(userId, session);
@@ -144,7 +147,7 @@ public class CommunityController {
             HttpSession session) {
 
         if (userId == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            throw new CustomException(ErrorCode.SESSION_USER_NOT_FOUND);
         }
 
         User user = getUserFromSessionOrDb(userId, session);
@@ -166,7 +169,7 @@ public class CommunityController {
             HttpSession session) {
 
         if (userId == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            throw new CustomException(ErrorCode.SESSION_USER_NOT_FOUND);
         }
 
         User user = getUserFromSessionOrDb(userId, session);
@@ -179,7 +182,7 @@ public class CommunityController {
         User user = (User) session.getAttribute("user");
         if (user == null) {
             user = userRepository.findById(userId)
-                    .orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
+                    .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
             session.setAttribute("user", user);
         }
         return user;
@@ -193,7 +196,7 @@ public class CommunityController {
             @SessionAttribute(name = "userId", required = false) Long userId) {
 
         if (userId == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            throw new CustomException(ErrorCode.SESSION_USER_NOT_FOUND);
         }
 
         CommunityCommentResponseDto responseDto = communityCommentService.addComment(communityId, requestDto, userId);
@@ -207,7 +210,7 @@ public class CommunityController {
             @SessionAttribute(name = "userId", required = false) Long userId) {
 
         if (userId == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            throw new CustomException(ErrorCode.SESSION_USER_NOT_FOUND);
         }
 
         communityCommentService.deleteComment(commentId, userId);
