@@ -25,6 +25,7 @@ public enum ErrorCode {
 
     // scrap
     SCRAP_NOT_FOUND(404, "스크랩 내역이 없습니다."),
+    ALREADY_SCRAPPED(400, "이미 스크랩한 게시물입니다."),
 
     // hospital
     HOSPITAL_NOT_FOUND(404, "해당 병원이 없습니다."),

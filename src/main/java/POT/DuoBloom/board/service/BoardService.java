@@ -162,7 +162,7 @@ public class BoardService {
                             targetUser.getNickname(),
                             targetUser.getProfilePictureUrl(),
                             board.getUser().getUserId().equals(currentUserId),
-                            likedByUser // likedByUser 추가
+                            likedByUser
                     );
                 })
                 .collect(Collectors.toList());
