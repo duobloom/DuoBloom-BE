@@ -1,5 +1,6 @@
 package POT.DuoBloom.domain.board.controller;
 
+import POT.DuoBloom.domain.board.dto.request.BoardCommentRequestDto;
 import POT.DuoBloom.domain.board.dto.response.BoardCommentDto;
 import POT.DuoBloom.domain.board.entity.BoardComment;
 import POT.DuoBloom.domain.board.service.BoardService;
@@ -34,14 +35,15 @@ public class BoardCommentController {
     })
     @PostMapping("/{boardId}/comments")
     public ResponseEntity<BoardCommentDto> addComment(@PathVariable Integer boardId,
-                                                      @RequestBody String content,
+                                                      @RequestBody BoardCommentRequestDto requestDto,
                                                       HttpSession session) {
         Long userId = (Long) session.getAttribute("userId");
         if (userId == null) {
             throw new CustomException(ErrorCode.UNAUTHORIZED_ACCESS);
         }
+
         User user = userService.findById(userId);
-        BoardComment boardComment = boardService.addComment(user, boardId, content);
+        BoardComment boardComment = boardService.addComment(user, boardId, requestDto.getContent());
 
         BoardCommentDto responseDto = new BoardCommentDto(
                 boardComment.getId(),
@@ -53,6 +55,7 @@ public class BoardCommentController {
         );
         return ResponseEntity.ok(responseDto);
     }
+
 
     @Operation(summary = "댓글 삭제", description = "지정된 댓글을 삭제합니다.")
     @ApiResponses({
