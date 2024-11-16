@@ -13,6 +13,14 @@ public enum ErrorCode {
     INVALID_REQUEST(400, "잘못된 요청입니다."),
     FORBIDDEN_ACCESS(403, "접근 권한이 없습니다."),
     SESSION_EXPIRED(401, "세션이 만료되었습니다."),
+    INVALID_REQUEST_BODY(400, "요청 본문이 잘못되었습니다."),
+    MISSING_REQUIRED_FIELD(400, "필수 필드가 누락되었습니다."),
+    INVALID_DATA_FORMAT(400, "유효하지 않은 데이터 형식입니다."),
+    INVALID_FIELD_VALUE(422, "요청 본문의 데이터가 유효하지 않습니다."),
+    FIELD_VALIDATION_FAILED(422, "필드 값 검증에 실패했습니다."),
+    UNSUPPORTED_MEDIA_TYPE(415, "지원하지 않는 Content-Type입니다."),
+
+
 
     // user
     USER_NOT_FOUND(404, "사용자를 찾을 수 없습니다."),

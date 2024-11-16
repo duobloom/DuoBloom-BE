@@ -27,9 +27,15 @@ public class PolicyScrapService {
     public void scrapPolicy(User user, Integer policyId) {
         Policy policy = policyRepository.findById(policyId)
                 .orElseThrow(() -> new CustomException(ErrorCode.POLICY_NOT_FOUND));
+
+        if (policyScrapRepository.findByUserAndPolicy(user, policy).isPresent()) {
+            throw new CustomException(ErrorCode.ALREADY_SCRAPPED);
+        }
+
         PolicyScrap scrap = new PolicyScrap(user, policy);
         policyScrapRepository.save(scrap);
     }
+
 
     public List<PolicyListDto> getPolicyScraps(User user) {
         return policyScrapRepository.findByUser(user).stream()
@@ -40,8 +46,10 @@ public class PolicyScrapService {
     public void unsavePolicy(User user, Integer policyId) {
         Policy policy = policyRepository.findById(policyId)
                 .orElseThrow(() -> new CustomException(ErrorCode.POLICY_NOT_FOUND));
+
         PolicyScrap scrap = policyScrapRepository.findByUserAndPolicy(user, policy)
                 .orElseThrow(() -> new CustomException(ErrorCode.SCRAP_NOT_FOUND));
+
         policyScrapRepository.delete(scrap);
     }
 

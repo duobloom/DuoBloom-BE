@@ -25,21 +25,28 @@ public class PolicyScrapController {
     @PostMapping
     public void scrapPolicy(HttpSession session, @RequestBody ScrapRequestDto requestDto) {
         Long userId = (Long) session.getAttribute("userId");
+
         if (userId == null) {
             throw new CustomException(ErrorCode.SESSION_USER_NOT_FOUND);
         }
+
         User user = userService.findById(userId);
+
         policyScrapService.scrapPolicy(user, requestDto.getPolicyId());
     }
+
 
     // 스크랩한 정책 조회
     @GetMapping
     public List<PolicyListDto> getPolicyScraps(HttpSession session) {
         Long userId = (Long) session.getAttribute("userId");
+
         if (userId == null) {
             throw new CustomException(ErrorCode.SESSION_USER_NOT_FOUND);
         }
+
         User user = userService.findById(userId);
+
         return policyScrapService.getPolicyScraps(user);
     }
 
@@ -48,10 +55,13 @@ public class PolicyScrapController {
     @DeleteMapping
     public void unsavePolicy(HttpSession session, @RequestBody ScrapRequestDto requestDto) {
         Long userId = (Long) session.getAttribute("userId");
+
         if (userId == null) {
             throw new CustomException(ErrorCode.SESSION_USER_NOT_FOUND);
         }
+
         User user = userService.findById(userId);
+
         policyScrapService.unsavePolicy(user, requestDto.getPolicyId());
     }
 }
