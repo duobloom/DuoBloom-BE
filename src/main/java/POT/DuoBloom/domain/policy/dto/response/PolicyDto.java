@@ -21,6 +21,7 @@ public class PolicyDto {
     private LocalDate endDate;
     private String target;
     private String linkUrl;
-    private String keyword;
+    private String imageUrl;
     private List<KeywordsMappingDto> keywordMappings;
+
 }

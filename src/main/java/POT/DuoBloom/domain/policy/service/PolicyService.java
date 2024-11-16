@@ -27,26 +27,23 @@ public class PolicyService {
 
     // 단일 정책 조회
     public PolicyDto getPolicyById(Integer policyId) {
-        Policy policy = policyRepository.findById(policyId)
+        Policy singlePolicy = policyRepository.findById(policyId)
                 .orElseThrow(() -> new CustomException(ErrorCode.POLICY_NOT_FOUND));
 
         return new PolicyDto(
-                policy.getPolicyId(),
-                policy.getPolicyName(),
-                policy.getPolicyHost(),
-                regionConversionService.convertRegionCodeToName(policy.getRegion()),
-                regionConversionService.convertMiddleCodeToName(policy.getMiddle()),
-                regionConversionService.convertDetailCodeToName(policy.getDetail()),
-                policy.getSex(),
-                policy.getStartDate(),
-                policy.getEndDate(),
-                policy.getTarget(),
-                policy.getLinkUrl(),
-                policy.getPolicyMappings().stream()
-                        .map(PolicyKeywordsMapping::getKeyword)
-                        .map(k -> k.getKeyword().name())
-                        .collect(Collectors.joining(", ")),
-                policy.getPolicyMappings().stream()
+                singlePolicy.getPolicyId(),
+                singlePolicy.getPolicyName(),
+                singlePolicy.getPolicyHost(),
+                regionConversionService.convertRegionCodeToName(singlePolicy.getRegion()),
+                regionConversionService.convertMiddleCodeToName(singlePolicy.getMiddle()),
+                regionConversionService.convertDetailCodeToName(singlePolicy.getDetail()),
+                singlePolicy.getSex(),
+                singlePolicy.getStartDate(),
+                singlePolicy.getEndDate(),
+                singlePolicy.getTarget(),
+                singlePolicy.getLinkUrl(),
+                singlePolicy.getImageUrl(),
+                singlePolicy.getPolicyMappings().stream()
                         .map(mapping -> new KeywordsMappingDto(
                                 mapping.getKeyword() != null ? mapping.getKeyword().getKeyword().name() : null))
                         .collect(Collectors.toList())
@@ -55,21 +52,22 @@ public class PolicyService {
 
     // 정책 목록 조회
     public List<PolicyListDto> getPolicies(Long region, Long middle, Long detail, Keyword keyword) {
-        List<Policy> policies = policyRepository.findByRegionAndKeyword(region, middle, detail, keyword);
-        if (policies.isEmpty()) {
+        List<Policy> policyList = policyRepository.findByRegionAndKeyword(region, middle, detail, keyword);
+        if (policyList.isEmpty()) {
             throw new CustomException(ErrorCode.POLICY_NOT_FOUND);
         }
-        return policies.stream()
-                .map(policy -> new PolicyListDto(
-                        policy.getPolicyId(),
-                        policy.getPolicyName(),
-                        policy.getPolicyHost(),
-                        regionConversionService.convertRegionCodeToName(policy.getRegion()),
-                        regionConversionService.convertMiddleCodeToName(policy.getMiddle()),
-                        regionConversionService.convertDetailCodeToName(policy.getDetail()),
-                        policy.getStartDate(),
-                        policy.getEndDate(),
-                        policy.getPolicyMappings().stream()
+        return policyList.stream()
+                .map(policyItem -> new PolicyListDto(
+                        policyItem.getPolicyId(),
+                        policyItem.getPolicyName(),
+                        policyItem.getPolicyHost(),
+                        regionConversionService.convertRegionCodeToName(policyItem.getRegion()),
+                        regionConversionService.convertMiddleCodeToName(policyItem.getMiddle()),
+                        regionConversionService.convertDetailCodeToName(policyItem.getDetail()),
+                        policyItem.getStartDate(),
+                        policyItem.getEndDate(),
+                        policyItem.getImageUrl(),
+                        policyItem.getPolicyMappings().stream()
                                 .map(mapping -> new KeywordsMappingDto(
                                         mapping.getKeyword() != null ? mapping.getKeyword().getKeyword().name() : null))
                                 .collect(Collectors.toList())

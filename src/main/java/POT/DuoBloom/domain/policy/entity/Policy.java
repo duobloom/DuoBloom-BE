@@ -46,6 +46,9 @@ public class Policy {
     @Column(name = "policy_host")
     private String policyHost;
 
+    @Column(name = "image_url")
+    private String imageUrl;
+
     @JsonManagedReference
     @OneToMany(mappedBy = "policy", cascade = CascadeType.ALL)
     private List<PolicyKeywordsMapping> policyMappings;
