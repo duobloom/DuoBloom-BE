@@ -268,6 +268,20 @@ public class BoardService {
         return boardCommentRepository.save(boardComment);
     }
 
+    @Transactional
+    public BoardComment updateComment(Long commentId, User user, String newContent) {
+        BoardComment boardComment = boardCommentRepository.findById(commentId)
+                .orElseThrow(() -> new CustomException(ErrorCode.COMMENT_NOT_FOUND));
+
+        if (!boardComment.getUser().equals(user)) {
+            throw new CustomException(ErrorCode.FORBIDDEN_ACCESS);
+        }
+
+        boardComment.updateContent(newContent);
+        return boardCommentRepository.save(boardComment);
+    }
+
+
     // 댓글 삭제
     @Transactional
     public void deleteComment(Long commentId) {
