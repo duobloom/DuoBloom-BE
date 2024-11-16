@@ -18,9 +18,12 @@ public class BoardScrapController {
     private final BoardScrapService boardScrapService;
     private final UserService userService;
 
-    @PostMapping("/{boardId}")
-    public void scrapBoard(@PathVariable Integer boardId, HttpSession session) {
+    @PostMapping
+    public void scrapBoard(@RequestParam Integer boardId, HttpSession session) {
         Long userId = (Long) session.getAttribute("userId");
+        if (userId == null) {
+            throw new IllegalArgumentException("로그인이 필요합니다.");
+        }
         User user = userService.findById(userId);
         boardScrapService.scrapBoard(user, boardId);
     }
@@ -28,13 +31,19 @@ public class BoardScrapController {
     @GetMapping
     public List<BoardListDto> getScrappedBoards(HttpSession session) {
         Long userId = (Long) session.getAttribute("userId");
+        if (userId == null) {
+            throw new IllegalArgumentException("로그인이 필요합니다.");
+        }
         User user = userService.findById(userId);
         return boardScrapService.getScrappedBoards(user);
     }
 
-    @DeleteMapping("/{boardId}")
-    public void unsaveBoard(@PathVariable Integer boardId, HttpSession session) {
+    @DeleteMapping
+    public void unsaveBoard(@RequestParam Integer boardId, HttpSession session) {
         Long userId = (Long) session.getAttribute("userId");
+        if (userId == null) {
+            throw new IllegalArgumentException("로그인이 필요합니다.");
+        }
         User user = userService.findById(userId);
         boardScrapService.unsaveBoard(user, boardId);
     }
