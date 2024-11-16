@@ -1,6 +1,7 @@
 package POT.DuoBloom.board.service;
 
 import POT.DuoBloom.board.dto.BoardCommentDto;
+import POT.DuoBloom.board.dto.BoardRequestDto;
 import POT.DuoBloom.board.dto.BoardResponseDto;
 import POT.DuoBloom.board.entity.Board;
 import POT.DuoBloom.board.entity.BoardComment;
@@ -149,9 +150,9 @@ public class BoardService {
 
     // 글 수정
     @Transactional
-    public BoardResponseDto updateBoard(User user, Integer boardId, String content) {
+    public BoardResponseDto updateBoard(User user, Integer boardId, BoardRequestDto boardRequestDto) {
         if (!canAccessBoard(user)) {
-            throw new IllegalStateException("커플인 경우에만 커뮤니티 글을 수정할 수 있습니다.");
+            throw new IllegalStateException("해당 글에 접근 권한이 없습니다.");
         }
 
         Board board = boardRepository.findById(boardId)
@@ -161,7 +162,13 @@ public class BoardService {
             throw new IllegalStateException("해당 글의 작성자만 수정할 수 있습니다.");
         }
 
-        board.updateContent(content);
+        // 내용 수정
+        board.updateContent(boardRequestDto.getContent());
+
+        // 기존 photoUrls를 새 요청의 photoUrls로 교체
+        board.getPhotoUrls().clear();
+        board.getPhotoUrls().addAll(boardRequestDto.getPhotoUrls());
+
         board.updateUpdatedAt(LocalDateTime.now());
         boardRepository.save(board);
 
@@ -176,9 +183,10 @@ public class BoardService {
                 boardCommentRepository.countByBoard_BoardId(board.getBoardId()),
                 board.getUser().getNickname(),
                 board.getUser().getProfilePictureUrl(),
-                true // 현재 사용자가 작성자이므로 true
+                true
         );
     }
+
 
 
 
