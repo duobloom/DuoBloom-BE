@@ -1,6 +1,5 @@
 package POT.DuoBloom.community.dto;
 
-import POT.DuoBloom.community.entity.Type;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -8,10 +7,10 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class CommunityResponseDto {
-    private Long communityId;
+public class CommunityCommentResponseDto {
+    private Long commentId;
     private String content;
-    private Type type;
     private String nickname;
-    private String profilePictureUrl;
+    private String profileUrl;
+    private boolean isOwner;
 }
