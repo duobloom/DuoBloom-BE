@@ -1,13 +1,9 @@
 package POT.DuoBloom.community.service;
 
 import POT.DuoBloom.community.dto.*;
-import POT.DuoBloom.community.dto.CommunityListResponseDto;
-import POT.DuoBloom.community.entity.Community;
-import POT.DuoBloom.community.entity.CommunityComment;
-import POT.DuoBloom.community.entity.CommunityLike;
-import POT.DuoBloom.community.repository.CommunityCommentRepository;
-import POT.DuoBloom.community.repository.CommunityLikeRepository;
-import POT.DuoBloom.community.repository.CommunityRepository;
+import POT.DuoBloom.community.dto.CommunityResponseDto;
+import POT.DuoBloom.community.entity.*;
+import POT.DuoBloom.community.repository.*;
 import POT.DuoBloom.user.entity.User;
 import POT.DuoBloom.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -149,7 +145,7 @@ public class CommunityService {
 
     @Transactional(readOnly = true)
     public List<CommunityListResponseDto> getCommunityList(Long userId) {
-        List<Community> communities = communityRepository.findAll(); // 모든 커뮤니티 조회
+        List<Community> communities = communityRepository.findAll();
 
         return communities.stream().map(community -> {
             long likeCount = communityLikeRepository.countByCommunity(community);
@@ -164,6 +160,12 @@ public class CommunityService {
             // 소유 여부 확인
             boolean isOwner = community.getUser().getUserId().equals(userId);
 
+            // 좋아요 여부 확인
+            boolean likedByUser = communityLikeRepository.findByUserAndCommunity(
+                    userRepository.findById(userId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found")),
+                    community
+            ).isPresent();
+
             return new CommunityListResponseDto(
                     community.getCommunityId(),
                     community.getContent(),
@@ -171,6 +173,7 @@ public class CommunityService {
                     community.getUser().getNickname(),
                     community.getUser().getProfilePictureUrl(),
                     isOwner,
+                    likedByUser, // 추가
                     community.getCreatedAt(),
                     community.getUpdatedAt(),
                     imageUrls,
