@@ -1,50 +1,62 @@
 package POT.DuoBloom.domain.board.controller;
 
+import POT.DuoBloom.common.exception.CustomException;
+import POT.DuoBloom.common.exception.ErrorCode;
 import POT.DuoBloom.domain.board.dto.response.BoardListDto;
 import POT.DuoBloom.domain.board.service.BoardScrapService;
-import POT.DuoBloom.domain.user.entity.User;
-import POT.DuoBloom.domain.user.service.UserService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/board-scrap")
 @RequiredArgsConstructor
+@RequestMapping("/api/board-scrap")
 public class BoardScrapController {
 
     private final BoardScrapService boardScrapService;
-    private final UserService userService;
+    private final HttpSession httpSession;
 
-    @PostMapping
-    public void scrapBoard(@RequestParam Integer boardId, HttpSession session) {
-        Long userId = (Long) session.getAttribute("userId");
-        if (userId == null) {
-            throw new IllegalArgumentException("로그인이 필요합니다.");
-        }
-        User user = userService.findById(userId);
-        boardScrapService.scrapBoard(user, boardId);
+    /**
+     * 게시글 스크랩
+     */
+    @PostMapping("/{boardId}")
+    public ResponseEntity<String> scrapBoard(@PathVariable Integer boardId) {
+        Long userId = getUserIdFromSession();
+        boardScrapService.scrapBoard(boardId, userId);
+        return ResponseEntity.ok("Board Scrapped");
     }
 
+    /**
+     * 게시글 스크랩 취소
+     */
+    @DeleteMapping("/{boardId}")
+    public ResponseEntity<String> unscrapBoard(@PathVariable Integer boardId) {
+        Long userId = getUserIdFromSession();
+        boardScrapService.unscrapBoard(boardId, userId);
+        return ResponseEntity.ok("Board Unscrapped");
+    }
+
+    /**
+     * 스크랩된 게시글 조회
+     */
     @GetMapping
-    public List<BoardListDto> getScrappedBoards(HttpSession session) {
-        Long userId = (Long) session.getAttribute("userId");
-        if (userId == null) {
-            throw new IllegalArgumentException("로그인이 필요합니다.");
-        }
-        User user = userService.findById(userId);
-        return boardScrapService.getScrappedBoards(user);
+    public ResponseEntity<List<BoardListDto>> getScrappedBoards() {
+        Long userId = getUserIdFromSession();
+        List<BoardListDto> scrappedBoards = boardScrapService.getScrappedBoards(userId);
+        return ResponseEntity.ok(scrappedBoards);
     }
 
-    @DeleteMapping
-    public void unsaveBoard(@RequestParam Integer boardId, HttpSession session) {
-        Long userId = (Long) session.getAttribute("userId");
+    /**
+     * 세션에서 사용자 ID 가져오기
+     */
+    private Long getUserIdFromSession() {
+        Long userId = (Long) httpSession.getAttribute("userId");
         if (userId == null) {
-            throw new IllegalArgumentException("로그인이 필요합니다.");
+            throw new CustomException(ErrorCode.SESSION_USER_NOT_FOUND);
         }
-        User user = userService.findById(userId);
-        boardScrapService.unsaveBoard(user, boardId);
+        return userId;
     }
 }

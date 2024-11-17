@@ -11,4 +11,5 @@ public interface BoardLikeRepository extends JpaRepository<BoardLike, Long> {
     int countByBoard(Board board);
     boolean existsByUserAndBoard(User user, Board board);
     void deleteByUserAndBoard(User user, Board board);
+    boolean existsByUser_UserIdAndBoard_BoardId(Long userId, Integer boardId);
 }

@@ -1,16 +1,18 @@
 package POT.DuoBloom.domain.board.service;
 
-import POT.DuoBloom.domain.board.dto.response.BoardCommentDto;
+import POT.DuoBloom.common.exception.CustomException;
+import POT.DuoBloom.common.exception.ErrorCode;
 import POT.DuoBloom.domain.board.dto.request.BoardRequestDto;
+import POT.DuoBloom.domain.board.dto.response.BoardCommentDto;
+import POT.DuoBloom.domain.board.dto.response.BoardListDto;
 import POT.DuoBloom.domain.board.dto.response.BoardResponseDto;
 import POT.DuoBloom.domain.board.entity.Board;
 import POT.DuoBloom.domain.board.entity.BoardComment;
 import POT.DuoBloom.domain.board.entity.BoardLike;
 import POT.DuoBloom.domain.board.repository.BoardCommentRepository;
-import POT.DuoBloom.domain.board.repository.BoardRepository;
 import POT.DuoBloom.domain.board.repository.BoardLikeRepository;
-import POT.DuoBloom.common.exception.CustomException;
-import POT.DuoBloom.common.exception.ErrorCode;
+import POT.DuoBloom.domain.board.repository.BoardRepository;
+import POT.DuoBloom.domain.board.repository.BoardScrapRepository;
 import POT.DuoBloom.domain.user.entity.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,18 +31,20 @@ public class BoardService {
 
     private final BoardRepository boardRepository;
     private final BoardLikeRepository likeRepository;
-    private final BoardCommentRepository boardCommentRepository;
+    private final BoardCommentRepository commentRepository;
+    private final BoardScrapRepository scrapRepository;
 
-    // 커플이 연결된 경우에만 접근 가능
-    public boolean canAccessBoard(User user) {
+    // 커플 연결 여부 확인
+    private boolean canAccessBoard(User user) {
         return user.getCoupleUser() != null;
     }
 
     @Transactional
-    public BoardResponseDto createBoard(User user, String content, List<String> photoUrls) {
+    public void createBoard(User user, String content, List<String> photoUrls) {
         if (!canAccessBoard(user)) {
-            throw new IllegalStateException("커플인 경우에만 커뮤니티에 글을 작성할 수 있습니다.");
+            throw new CustomException(ErrorCode.COUPLE_ONLY_ACCESS);
         }
+
         Board board = new Board(user, content, LocalDateTime.now());
 
         if (photoUrls != null) {
@@ -49,132 +53,60 @@ public class BoardService {
 
         boardRepository.save(board);
 
-        // 반환할 때 BoardResponseDto로 변환
-        return new BoardResponseDto(
-                board.getBoardId(),
-                board.getContent(),
-                board.getUpdatedAt(),
-                board.getPhotoUrls(),
-                null, // 댓글 정보는 여기서 처리하지 않음
-                likeRepository.countByBoard(board),
-                boardCommentRepository.countByBoard_BoardId(board.getBoardId()),
-                user.getNickname(),
-                user.getProfilePictureUrl(),
-                true, // 현재 사용자가 작성자이므로 true
-                false
-        );
     }
 
 
+
     @Transactional(readOnly = true)
-    public List<BoardResponseDto> getAllBoards(User currentUser) {
+    public List<BoardListDto> getAllBoards(User currentUser) {
         Long currentUserId = currentUser.getUserId();
-        User coupleUser = currentUser.getCoupleUser();
-        Long coupleUserId = (coupleUser != null) ? coupleUser.getUserId() : null;
 
         return boardRepository.findAll().stream()
-                .filter(board -> board.getUser().getUserId().equals(currentUserId) ||
-                        (coupleUserId != null && board.getUser().getUserId().equals(coupleUserId)))
                 .map(board -> {
                     boolean likedByUser = likeRepository.existsByUserAndBoard(currentUser, board);
-                    return new BoardResponseDto(
-                            board.getBoardId(),
-                            board.getContent(),
-                            board.getUpdatedAt(),
-                            board.getPhotoUrls(),
-                            null, // 댓글 정보는 여기서 처리하지 않음
-                            likeRepository.countByBoard(board),
-                            boardCommentRepository.countByBoard_BoardId(board.getBoardId()),
-                            board.getUser().getNickname(),
-                            board.getUser().getProfilePictureUrl(),
-                            board.getUser().getUserId().equals(currentUserId),
-                            likedByUser // 추가된 필드 설정
-                    );
+                    boolean scraped = scrapRepository.existsByBoard_BoardIdAndUser_UserId(board.getBoardId(), currentUserId);
+                    return convertToListDto(board, currentUserId, likedByUser, scraped);
                 })
                 .collect(Collectors.toList());
     }
 
-
-
-
-
     @Transactional(readOnly = true)
     public BoardResponseDto getBoardDetailsById(Integer boardId, User currentUser) {
-        Long currentUserId = currentUser.getUserId();
-
         Board board = boardRepository.findById(boardId)
                 .orElseThrow(() -> new CustomException(ErrorCode.BOARD_NOT_FOUND));
 
-        boolean likedByUser = likeRepository.existsByUserAndBoard(currentUser, board);
-
-        List<BoardComment> comments = boardCommentRepository.findByBoard_BoardId(boardId);
+        List<BoardComment> comments = commentRepository.findByBoard_BoardId(boardId);
         List<BoardCommentDto> commentDtos = comments.stream()
-                .map(comment -> new BoardCommentDto(
-                        comment.getId(),
-                        comment.getUser().getNickname(),
-                        comment.getUser().getProfilePictureUrl(),
-                        comment.getContent(),
-                        comment.getCreatedAt(),
-                        comment.getUser().getUserId().equals(currentUserId)
-                ))
+                .map(comment -> convertToCommentDto(comment, currentUser.getUserId()))
                 .collect(Collectors.toList());
 
-        boolean isMine = board.getUser().getUserId().equals(currentUserId);
+        boolean likedByUser = likeRepository.existsByUserAndBoard(currentUser, board);
+        boolean isMine = board.getUser().getUserId().equals(currentUser.getUserId());
 
-        return new BoardResponseDto(
-                board.getBoardId(),
-                board.getContent(),
-                board.getUpdatedAt(),
-                board.getPhotoUrls(),
-                commentDtos,
-                likeRepository.countByBoard(board),
-                boardCommentRepository.countByBoard_BoardId(board.getBoardId()),
-                board.getUser().getNickname(),
-                board.getUser().getProfilePictureUrl(),
-                isMine,
-                likedByUser
-        );
+        return convertToResponseDtoWithComments(board, currentUser.getUserId(), likedByUser, isMine, commentDtos);
     }
-
-
-
-
 
     @Transactional(readOnly = true)
     public List<BoardResponseDto> getBoardsByDateAndUser(LocalDate date, User targetUser, Long currentUserId) {
         List<Board> boards = boardRepository.findByUserAndFeedDate(targetUser, date);
+
         return boards.stream()
                 .map(board -> {
                     // 현재 사용자가 게시글을 좋아요 눌렀는지 확인
-                    boolean likedByUser = likeRepository.existsByUserAndBoard(
-                            targetUser, // 현재 조회하는 사용자
-                            board
-                    );
+                    boolean likedByUser = likeRepository.existsByUserAndBoard(targetUser, board);
 
-                    return new BoardResponseDto(
-                            board.getBoardId(),
-                            board.getContent(),
-                            board.getUpdatedAt(),
-                            board.getPhotoUrls(),
-                            null, // 댓글 정보는 여기서 처리하지 않음
-                            likeRepository.countByBoard(board),
-                            boardCommentRepository.countByBoard_BoardId(board.getBoardId()),
-                            targetUser.getNickname(),
-                            targetUser.getProfilePictureUrl(),
-                            board.getUser().getUserId().equals(currentUserId),
-                            likedByUser
-                    );
+                    // 현재 사용자가 게시글을 스크랩했는지 확인
+                    boolean scraped = scrapRepository.existsByBoard_BoardIdAndUser_UserId(board.getBoardId(), currentUserId);
+
+                    // ResponseDto 변환
+                    return convertToResponseDto(board, currentUserId, likedByUser, scraped);
                 })
                 .collect(Collectors.toList());
     }
 
 
-
-
-
-    // 글 수정
     @Transactional
-    public BoardResponseDto updateBoard(User user, Integer boardId, BoardRequestDto boardRequestDto) {
+    public void updateBoard(User user, Integer boardId, BoardRequestDto boardRequestDto) {
         if (!canAccessBoard(user)) {
             throw new CustomException(ErrorCode.COUPLE_ONLY_ACCESS);
         }
@@ -191,40 +123,90 @@ public class BoardService {
         board.getPhotoUrls().addAll(boardRequestDto.getPhotoUrls());
         board.updateUpdatedAt(LocalDateTime.now());
 
-        boolean likedByUser = likeRepository.existsByUserAndBoard(user, board);
+        boardRepository.save(board); // 변경 내용을 저장
+    }
+
+
+    @Transactional
+    public void deleteBoard(User user, Integer boardId) {
+        if (!canAccessBoard(user)) {
+            throw new CustomException(ErrorCode.COUPLE_ONLY_ACCESS);
+        }
+
+        Board board = boardRepository.findById(boardId)
+                .orElseThrow(() -> new CustomException(ErrorCode.BOARD_NOT_FOUND));
+
+        if (!board.getUser().equals(user)) {
+            throw new CustomException(ErrorCode.FORBIDDEN_ACCESS);
+        }
+
+        boardRepository.delete(board);
+    }
+
+    private BoardResponseDto convertToResponseDto(Board board, Long userId, boolean likedByUser, boolean scraped) {
+        return new BoardResponseDto(
+                board.getBoardId(),
+                board.getContent(),
+                board.getUpdatedAt(),
+                board.getPhotoUrls(),
+                null, // 댓글 정보는 여기서 처리하지 않음
+                likeRepository.countByBoard(board), // 좋아요 수
+                commentRepository.countByBoard_BoardId(board.getBoardId()), // 댓글 수
+                board.getUser().getNickname(),
+                board.getUser().getProfilePictureUrl(),
+                board.getUser().getUserId().equals(userId), // isMine
+                likedByUser,
+                scraped // 스크랩 여부
+        );
+    }
+
+
+    private BoardResponseDto convertToResponseDtoWithComments(Board board, Long userId, boolean likedByUser, boolean isMine, List<BoardCommentDto> comments) {
+        boolean scraped = scrapRepository.existsByBoard_BoardIdAndUser_UserId(board.getBoardId(), userId);
 
         return new BoardResponseDto(
                 board.getBoardId(),
                 board.getContent(),
                 board.getUpdatedAt(),
                 board.getPhotoUrls(),
-                null,
+                comments,
                 likeRepository.countByBoard(board),
-                boardCommentRepository.countByBoard_BoardId(board.getBoardId()),
+                commentRepository.countByBoard_BoardId(board.getBoardId()),
                 board.getUser().getNickname(),
                 board.getUser().getProfilePictureUrl(),
-                true,
-                likedByUser
+                isMine,
+                likedByUser,
+                scraped
         );
     }
 
-
-    // 글 삭제
-    @Transactional
-    public void deleteBoard(User user, Integer boardId) {
-        if (!canAccessBoard(user)) {
-            throw new IllegalStateException("커플인 경우에만 커뮤니티 글을 삭제할 수 있습니다.");
-        }
-
-        Board board = boardRepository.findById(boardId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 글이 존재하지 않습니다."));
-
-        if (!board.getUser().equals(user)) {
-            throw new IllegalStateException("해당 글의 작성자만 삭제할 수 있습니다.");
-        }
-
-        boardRepository.delete(board);
+    private BoardCommentDto convertToCommentDto(BoardComment comment, Long userId) {
+        return new BoardCommentDto(
+                comment.getId(),
+                comment.getUser().getNickname(),
+                comment.getUser().getProfilePictureUrl(),
+                comment.getContent(),
+                comment.getCreatedAt(),
+                comment.getUser().getUserId().equals(userId)
+        );
     }
+
+    private BoardListDto convertToListDto(Board board, Long userId, boolean likedByUser, boolean scraped) {
+        return new BoardListDto(
+                board.getBoardId(),
+                board.getContent(),
+                board.getUpdatedAt(),
+                board.getPhotoUrls(),
+                likeRepository.countByBoard(board),
+                commentRepository.countByBoard_BoardId(board.getBoardId()),
+                board.getUser().getNickname(),
+                board.getUser().getProfilePictureUrl(),
+                board.getUser().getUserId().equals(userId),
+                likedByUser,
+                scraped
+        );
+    }
+
 
     // 특정 사용자가 특정 게시물에 좋아요를 눌렀는지 확인
     @Transactional(readOnly = true)
@@ -233,6 +215,7 @@ public class BoardService {
                 .orElseThrow(() -> new CustomException(ErrorCode.BOARD_NOT_FOUND));
         return likeRepository.existsByUserAndBoard(user, board);
     }
+
 
     // 좋아요 추가
     @Transactional
@@ -258,19 +241,18 @@ public class BoardService {
         likeRepository.deleteByUserAndBoard(user, board);
     }
 
-
     // 댓글 추가
     @Transactional
     public BoardComment addComment(User user, Integer boardId, String content) {
         Board board = boardRepository.findById(boardId)
                 .orElseThrow(() -> new CustomException(ErrorCode.BOARD_NOT_FOUND));
         BoardComment boardComment = new BoardComment(user, board, content);
-        return boardCommentRepository.save(boardComment);
+        return commentRepository.save(boardComment);
     }
 
     @Transactional
     public BoardComment updateComment(Long commentId, User user, String newContent) {
-        BoardComment boardComment = boardCommentRepository.findById(commentId)
+        BoardComment boardComment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new CustomException(ErrorCode.COMMENT_NOT_FOUND));
 
         if (!boardComment.getUser().equals(user)) {
@@ -278,15 +260,15 @@ public class BoardService {
         }
 
         boardComment.updateContent(newContent);
-        return boardCommentRepository.save(boardComment);
+        return commentRepository.save(boardComment);
     }
 
 
     // 댓글 삭제
     @Transactional
     public void deleteComment(Long commentId) {
-        BoardComment boardComment = boardCommentRepository.findById(commentId)
+        BoardComment boardComment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new CustomException(ErrorCode.COMMENT_NOT_FOUND));
-        boardCommentRepository.delete(boardComment);
+        commentRepository.delete(boardComment);
     }
 }

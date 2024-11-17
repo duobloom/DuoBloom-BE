@@ -63,4 +63,6 @@ public class Board {
     public void updateUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
     }
+
+
 }
