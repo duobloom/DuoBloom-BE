@@ -14,5 +14,7 @@ public class CommunityRequestDto {
     private String content;
     private Type type;
     private List<String> tags;
+    private List<String> imageUrls;
+
 }
 

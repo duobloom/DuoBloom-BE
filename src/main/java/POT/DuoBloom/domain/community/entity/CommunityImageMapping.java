@@ -19,7 +19,7 @@ public class CommunityImageMapping {
     @JoinColumn(name = "community_id", nullable = false)
     private Community community;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     @JoinColumn(name = "image_id", nullable = false)
     private CommunityImage communityImage;
 
