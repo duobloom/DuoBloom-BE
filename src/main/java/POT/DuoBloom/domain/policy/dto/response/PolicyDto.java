@@ -23,5 +23,6 @@ public class PolicyDto {
     private String linkUrl;
     private String imageUrl;
     private List<KeywordsMappingDto> keywordMappings;
+    private boolean scraped;
 
 }

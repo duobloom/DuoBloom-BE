@@ -8,8 +8,8 @@ import POT.DuoBloom.domain.policy.entity.Policy;
 import POT.DuoBloom.domain.policy.entity.PolicyScrap;
 import POT.DuoBloom.domain.policy.repository.PolicyRepository;
 import POT.DuoBloom.domain.policy.repository.PolicyScrapRepository;
-import POT.DuoBloom.domain.region.service.RegionConversionService;
 import POT.DuoBloom.domain.user.entity.User;
+import POT.DuoBloom.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -20,58 +20,59 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class PolicyScrapService {
 
-    private final PolicyScrapRepository policyScrapRepository;
+    private final PolicyScrapRepository scrapRepository;
     private final PolicyRepository policyRepository;
-    private final RegionConversionService regionConversionService;
+    private final UserRepository userRepository;
 
-    public void scrapPolicy(User user, Integer policyId) {
+    /**
+     * 정책 스크랩 등록
+     */
+    public void scrapPolicy(Integer policyId, Long userId) {
         Policy policy = policyRepository.findById(policyId)
                 .orElseThrow(() -> new CustomException(ErrorCode.POLICY_NOT_FOUND));
 
-        if (policyScrapRepository.findByUserAndPolicy(user, policy).isPresent()) {
-            throw new CustomException(ErrorCode.ALREADY_SCRAPPED);
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+        if (!scrapRepository.existsByPolicy_PolicyIdAndUser_UserId(policyId, userId)) {
+            scrapRepository.save(new PolicyScrap(user, policy));
         }
-
-        PolicyScrap scrap = new PolicyScrap(user, policy);
-        policyScrapRepository.save(scrap);
     }
 
-
-    public List<PolicyListDto> getPolicyScraps(User user) {
-        return policyScrapRepository.findByUser(user).stream()
-                .map(scrap -> convertToPolicyListDto(scrap.getPolicy()))
-                .collect(Collectors.toList());
-    }
-
-    public void unsavePolicy(User user, Integer policyId) {
-        Policy policy = policyRepository.findById(policyId)
-                .orElseThrow(() -> new CustomException(ErrorCode.POLICY_NOT_FOUND));
-
-        PolicyScrap scrap = policyScrapRepository.findByUserAndPolicy(user, policy)
+    /**
+     * 정책 스크랩 해제
+     */
+    public void unscrapPolicy(Integer policyId, Long userId) {
+        PolicyScrap scrap = scrapRepository.findByPolicy_PolicyIdAndUser_UserId(policyId, userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.SCRAP_NOT_FOUND));
 
-        policyScrapRepository.delete(scrap);
+        scrapRepository.delete(scrap);
     }
 
-    private PolicyListDto convertToPolicyListDto(Policy policy) {
-        PolicyListDto policyListDto = new PolicyListDto();
-        policyListDto.setPolicyId(policy.getPolicyId());
-        policyListDto.setPolicyName(policy.getPolicyName());
-        policyListDto.setPolicyHost(policy.getPolicyHost());
-        policyListDto.setRegion(regionConversionService.convertRegionCodeToName(policy.getRegion()));
-        policyListDto.setMiddle(regionConversionService.convertMiddleCodeToName(policy.getMiddle()));
-        policyListDto.setDetail(regionConversionService.convertDetailCodeToName(policy.getDetail()));
-        policyListDto.setStartDate(policy.getStartDate());
-        policyListDto.setEndDate(policy.getEndDate());
-        policyListDto.setImageUrl(policy.getImageUrl());
-
-        // KeywordMappings 변환
-        List<KeywordsMappingDto> keywordMappings = policy.getPolicyMappings().stream()
-                .map(mapping -> new KeywordsMappingDto(
-                        mapping.getKeyword() != null ? mapping.getKeyword().getKeyword().toString() : null))
+    /**
+     * 스크랩된 정책 목록 조회
+     */
+    public List<PolicyListDto> getScrappedPolicies(Long userId) {
+        return scrapRepository.findByUser_UserId(userId).stream()
+                .map(scrap -> {
+                    Policy policy = scrap.getPolicy();
+                    return new PolicyListDto(
+                            policy.getPolicyId(),
+                            policy.getPolicyName(),
+                            policy.getPolicyHost(),
+                            policy.getRegion() != null ? policy.getRegion().toString() : "", // null 처리
+                            policy.getMiddle() != null ? policy.getMiddle().toString() : "", // null 처리
+                            policy.getDetail() != null ? policy.getDetail().toString() : "", // null 처리
+                            policy.getStartDate(),
+                            policy.getEndDate(),
+                            policy.getImageUrl(),
+                            policy.getPolicyMappings().stream()
+                                    .map(mapping -> new KeywordsMappingDto(
+                                            mapping.getKeyword() != null ? mapping.getKeyword().getKeyword().name() : null))
+                                    .collect(Collectors.toList()),
+                            true // 스크랩된 정책이므로 항상 true
+                    );
+                })
                 .collect(Collectors.toList());
-        policyListDto.setKeywordMappings(keywordMappings);
-
-        return policyListDto;
     }
 }
