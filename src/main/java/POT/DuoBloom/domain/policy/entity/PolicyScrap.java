@@ -2,11 +2,13 @@ package POT.DuoBloom.domain.policy.entity;
 
 import POT.DuoBloom.domain.user.entity.User;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Table(name = "policy_scrap")
 public class PolicyScrap {

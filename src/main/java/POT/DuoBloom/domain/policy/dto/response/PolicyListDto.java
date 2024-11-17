@@ -21,4 +21,5 @@ public class PolicyListDto {
     private LocalDate endDate;
     private String imageUrl;
     private List<KeywordsMappingDto> keywordMappings;
+    private boolean scraped;
 }
