@@ -21,4 +21,5 @@ public class HospitalListDto {
     private Double latitude;
     private Double longitude;
     private String time;
+    private boolean isScraped;
 }
