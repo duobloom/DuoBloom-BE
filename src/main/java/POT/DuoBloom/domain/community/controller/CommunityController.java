@@ -40,7 +40,7 @@ public class CommunityController {
             @ApiResponse(responseCode = "404", description = "사용자를 찾을 수 없습니다.")
     })
     @PostMapping
-    public ResponseEntity<CommunityResponseDto> createCommunity(
+    public ResponseEntity<Void> createCommunity(
             @RequestBody CommunityRequestDto requestDto,
             @SessionAttribute(name = "userId", required = false) Long userId,
             HttpSession session) {
@@ -50,9 +50,8 @@ public class CommunityController {
         }
 
         User user = getUserFromSessionOrDb(userId, session);
-
-        CommunityResponseDto responseDto = communityService.createCommunity(requestDto, user.getUserId());
-        return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
+        communityService.createCommunity(requestDto, user.getUserId());
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
     @Operation(summary = "단일 게시글 조회", description = "단일 게시글을 조회합니다.")
@@ -93,23 +92,6 @@ public class CommunityController {
         return ResponseEntity.ok(responseDtos);
     }
 
-
-//    TEST 용
-//    @Operation(summary = "커뮤니티 게시글 목록 조회", description = "모든 커뮤니티 게시글을 조회합니다.")
-//    @ApiResponse(responseCode = "200", description = "게시글 목록 조회 성공")
-//    @GetMapping
-//    public ResponseEntity<List<CommunityListResponseDto>> getCommunityList(
-//            @SessionAttribute(name = "userId", required = false) Long userId) {
-//
-//        if (userId == null) {
-//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-//        }
-//
-//        List<CommunityListResponseDto> responseDtos = communityService.getCommunityList(userId);
-//        return ResponseEntity.ok(responseDtos);
-//    }
-
-
     @Operation(summary = "커뮤니티 게시글 수정", description = "특정 커뮤니티 게시글을 수정합니다.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "게시글 수정 성공"),
@@ -117,7 +99,7 @@ public class CommunityController {
             @ApiResponse(responseCode = "404", description = "사용자를 찾을 수 없습니다.")
     })
     @PutMapping("/{communityId}")
-    public ResponseEntity<CommunityResponseDto> updateCommunity(
+    public ResponseEntity<Void> updateCommunity(
             @PathVariable Long communityId,
             @RequestBody CommunityRequestDto requestDto,
             @SessionAttribute(name = "userId", required = false) Long userId,
@@ -128,9 +110,8 @@ public class CommunityController {
         }
 
         User user = getUserFromSessionOrDb(userId, session);
-
-        CommunityResponseDto responseDto = communityService.updateCommunity(communityId, requestDto, user.getUserId());
-        return ResponseEntity.ok(responseDto);
+        communityService.updateCommunity(communityId, requestDto, user.getUserId());
+        return ResponseEntity.ok().build();
     }
 
     @Operation(summary = "커뮤니티 게시글 삭제", description = "특정 커뮤니티 게시글을 삭제합니다.")
@@ -150,7 +131,6 @@ public class CommunityController {
         }
 
         User user = getUserFromSessionOrDb(userId, session);
-
         communityService.deleteCommunity(communityId, user.getUserId());
         return ResponseEntity.noContent().build();
     }
@@ -172,7 +152,6 @@ public class CommunityController {
         }
 
         User user = getUserFromSessionOrDb(userId, session);
-
         communityService.toggleLike(communityId, user.getUserId());
         return ResponseEntity.ok().build();
     }

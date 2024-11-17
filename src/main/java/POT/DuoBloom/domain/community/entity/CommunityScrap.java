@@ -6,12 +6,11 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+@Entity
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity
 public class CommunityScrap {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

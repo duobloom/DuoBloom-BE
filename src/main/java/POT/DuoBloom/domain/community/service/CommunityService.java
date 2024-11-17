@@ -8,10 +8,7 @@ import POT.DuoBloom.domain.community.entity.Community;
 import POT.DuoBloom.domain.community.entity.CommunityLike;
 import POT.DuoBloom.domain.community.entity.Tag;
 import POT.DuoBloom.domain.community.entity.Type;
-import POT.DuoBloom.domain.community.repository.CommunityCommentRepository;
-import POT.DuoBloom.domain.community.repository.CommunityLikeRepository;
-import POT.DuoBloom.domain.community.repository.CommunityRepository;
-import POT.DuoBloom.domain.community.repository.TagRepository;
+import POT.DuoBloom.domain.community.repository.*;
 import POT.DuoBloom.domain.user.entity.User;
 import POT.DuoBloom.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -33,11 +30,12 @@ public class CommunityService {
     private final CommunityRepository communityRepository;
     private final CommunityCommentRepository communityCommentRepository;
     private final CommunityLikeRepository communityLikeRepository;
+    private final CommunityScrapRepository communityScrapRepository;
     private final UserRepository userRepository;
     private final TagRepository tagRepository;
 
     @Transactional
-    public CommunityResponseDto createCommunity(CommunityRequestDto requestDto, Long userId) {
+    public void createCommunity(CommunityRequestDto requestDto, Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
@@ -51,91 +49,21 @@ public class CommunityService {
             }
         }
 
-        Community savedCommunity = communityRepository.save(community);
-        return new CommunityResponseDto(
-                savedCommunity.getCommunityId(),
-                savedCommunity.getContent(),
-                savedCommunity.getType(),
-                savedCommunity.getUser().getNickname(),
-                savedCommunity.getUser().getProfilePictureUrl()
-        );
+        communityRepository.save(community);
     }
-
-
-    @Transactional(readOnly = true)
-    public CommunityFullResponseDto getCommunityWithDetails(Long communityId, Long userId) {
-        Community community = communityRepository.findById(communityId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Community not found"));
-
-        CommunityResponseDto communityDto = new CommunityResponseDto(
-                community.getCommunityId(),
-                community.getContent(),
-                community.getType(),
-                community.getUser().getNickname(),
-                community.getUser().getProfilePictureUrl()
-        );
-
-        List<CommunityImageResponseDto> images = community.getImageMappings()
-                .stream()
-                .map(mapping -> new CommunityImageResponseDto(
-                        mapping.getCommunityImage().getImageId(),
-                        mapping.getCommunityImage().getImageUrl()))
-                .collect(Collectors.toList());
-
-        List<CommunityCommentResponseDto> comments = communityCommentRepository.findByCommunity(community)
-                .stream()
-                .map(comment -> new CommunityCommentResponseDto(
-                        comment.getCommentId(),
-                        comment.getContent(),
-                        comment.getUser().getNickname(),
-                        comment.getUser().getProfilePictureUrl(),
-                        comment.getUser().getUserId().equals(userId)))
-                .collect(Collectors.toList());
-
-        long likeCount = communityLikeRepository.countByCommunity(community);
-        boolean isLikedByUser = communityLikeRepository.findByUserAndCommunity(
-                userRepository.findById(userId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found")),
-                community
-        ).isPresent();
-
-        List<TagResponseDto> tags = community.getTags().stream()
-                .map(tag -> new TagResponseDto(tag.getTagId(), tag.getName()))
-                .collect(Collectors.toList());
-
-        boolean isOwner = community.getUser().getUserId().equals(userId);
-
-        return new CommunityFullResponseDto(
-                communityDto,
-                images,
-                comments,
-                likeCount,
-                isLikedByUser,
-                isOwner,
-                tags
-        );
-    }
-
 
     @Transactional
-    public CommunityResponseDto updateCommunity(Long communityId, CommunityRequestDto requestDto, Long userId) {
+    public void updateCommunity(Long communityId, CommunityRequestDto requestDto, Long userId) {
         Community community = communityRepository.findById(communityId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Community not found"));
+                .orElseThrow(() -> new CustomException(ErrorCode.COMMUNITY_NOT_FOUND));
 
         if (!community.getUser().getUserId().equals(userId)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You do not have permission to update this post");
+            throw new CustomException(ErrorCode.FORBIDDEN_ACCESS);
         }
 
         community.updateContent(requestDto.getContent());
         community.updateType(requestDto.getType());
-
-        Community updatedCommunity = communityRepository.save(community);
-        return new CommunityResponseDto(
-                updatedCommunity.getCommunityId(),
-                updatedCommunity.getContent(),
-                updatedCommunity.getType(),
-                updatedCommunity.getUser().getNickname(),
-                updatedCommunity.getUser().getProfilePictureUrl()
-        );
+        communityRepository.save(community);
     }
 
     @Transactional
@@ -150,17 +78,86 @@ public class CommunityService {
         communityRepository.deleteById(communityId);
     }
 
-    @Transactional
-    public void toggleLike(Long communityId, Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
-        Community community = communityRepository.findById(communityId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Community not found"));
+    @Transactional(readOnly = true)
+    public List<CommunityListResponseDto> getCommunityList(Long userId) {
+        List<Community> communities = communityRepository.findAll();
 
-        communityLikeRepository.findByUserAndCommunity(user, community).ifPresentOrElse(
-                communityLikeRepository::delete,
-                () -> communityLikeRepository.save(new CommunityLike(user, community))
-        );
+        return communities.stream().map(community -> {
+            long likeCount = communityLikeRepository.countByCommunity(community);
+            long commentCount = communityCommentRepository.countByCommunity(community);
+
+            List<TagResponseDto> tags = community.getTags().stream()
+                    .map(tag -> new TagResponseDto(tag.getTagId(), tag.getName()))
+                    .collect(Collectors.toList());
+
+            boolean likedByUser = communityLikeRepository.findByUserAndCommunity(
+                    userRepository.findById(userId).orElse(null),
+                    community
+            ).isPresent();
+
+            boolean scraped = communityScrapRepository.existsByCommunity_CommunityIdAndUser_UserId(
+                    community.getCommunityId(), userId);
+
+            return new CommunityListResponseDto(
+                    community.getCommunityId(),
+                    community.getContent(),
+                    community.getType(),
+                    community.getUser().getNickname(),
+                    community.getUser().getProfilePictureUrl(),
+                    community.getUser().getUserId().equals(userId),
+                    likedByUser,
+                    scraped, // 스크랩 여부 추가
+                    community.getCreatedAt(),
+                    community.getUpdatedAt(),
+                    community.getImageMappings().stream()
+                            .map(mapping -> mapping.getCommunityImage().getImageUrl())
+                            .collect(Collectors.toList()),
+                    likeCount,
+                    commentCount,
+                    tags
+            );
+        }).collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<CommunityListResponseDto> getCommunitiesByType(String type, Long userId) {
+        List<Community> communities = communityRepository.findByType(Type.valueOf(type.toUpperCase()));
+
+        return communities.stream().map(community -> {
+            long likeCount = communityLikeRepository.countByCommunity(community);
+            long commentCount = communityCommentRepository.countByCommunity(community);
+
+            List<TagResponseDto> tags = community.getTags().stream()
+                    .map(tag -> new TagResponseDto(tag.getTagId(), tag.getName()))
+                    .collect(Collectors.toList());
+
+            boolean likedByUser = communityLikeRepository.findByUserAndCommunity(
+                    userRepository.findById(userId).orElse(null),
+                    community
+            ).isPresent();
+
+            boolean scraped = communityScrapRepository.existsByCommunity_CommunityIdAndUser_UserId(
+                    community.getCommunityId(), userId);
+
+            return new CommunityListResponseDto(
+                    community.getCommunityId(),
+                    community.getContent(),
+                    community.getType(),
+                    community.getUser().getNickname(),
+                    community.getUser().getProfilePictureUrl(),
+                    community.getUser().getUserId().equals(userId),
+                    likedByUser,
+                    scraped, // 스크랩 여부 추가
+                    community.getCreatedAt(),
+                    community.getUpdatedAt(),
+                    community.getImageMappings().stream()
+                            .map(mapping -> mapping.getCommunityImage().getImageUrl())
+                            .collect(Collectors.toList()),
+                    likeCount,
+                    commentCount,
+                    tags
+            );
+        }).collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
@@ -188,8 +185,14 @@ public class CommunityService {
 
                 // 소유 여부 확인
                 boolean isOwner = userId != null && userId.equals(community.getUser().getUserId());
-                boolean likedByUser = communityLikeRepository.findByUserAndCommunity(
+
+                // 좋아요 여부 확인
+                boolean likedByUser = userId != null && communityLikeRepository.findByUserAndCommunity(
                         userRepository.findById(userId).orElse(null), community).isPresent();
+
+                // 스크랩 여부 확인
+                boolean isScraped = userId != null && communityScrapRepository.existsByCommunity_CommunityIdAndUser_UserId(
+                        community.getCommunityId(), userId);
 
                 // 태그 리스트 생성
                 List<TagResponseDto> tags = community.getTags().stream()
@@ -204,6 +207,7 @@ public class CommunityService {
                         community.getUser().getProfilePictureUrl(),
                         isOwner,
                         likedByUser,
+                        isScraped, // 스크랩 여부 추가
                         community.getCreatedAt(),
                         community.getUpdatedAt(),
                         imageUrls,
@@ -217,81 +221,76 @@ public class CommunityService {
         return result;
     }
 
-    // 테스트용
-    @Transactional(readOnly = true)
-    public List<CommunityListResponseDto> getCommunityList(Long userId) {
-        List<Community> communities = communityRepository.findAll();
-
-        return communities.stream().map(community -> {
-            long likeCount = communityLikeRepository.countByCommunity(community);
-            long commentCount = communityCommentRepository.countByCommunity(community);
-
-            List<TagResponseDto> tags = community.getTags().stream()
-                    .map(tag -> new TagResponseDto(tag.getTagId(), tag.getName()))
-                    .collect(Collectors.toList());
-
-            boolean isLikedByUser = communityLikeRepository.findByUserAndCommunity(
-                    userRepository.findById(userId).orElse(null),
-                    community
-            ).isPresent();
-
-            return new CommunityListResponseDto(
-                    community.getCommunityId(),
-                    community.getContent(),
-                    community.getType(),
-                    community.getUser().getNickname(),
-                    community.getUser().getProfilePictureUrl(),
-                    community.getUser().getUserId().equals(userId),
-                    isLikedByUser,
-                    community.getCreatedAt(),
-                    community.getUpdatedAt(),
-                    community.getImageMappings().stream()
-                            .map(mapping -> mapping.getCommunityImage().getImageUrl())
-                            .collect(Collectors.toList()),
-                    likeCount,
-                    commentCount,
-                    tags
-            );
-        }).collect(Collectors.toList());
-    }
 
     @Transactional(readOnly = true)
-    public List<CommunityListResponseDto> getCommunitiesByType(String type, Long userId) {
-        List<Community> communities = communityRepository.findByType(Type.valueOf(type.toUpperCase()));
+    public CommunityFullResponseDto getCommunityWithDetails(Long communityId, Long userId) {
+        Community community = communityRepository.findById(communityId)
+                .orElseThrow(() -> new CustomException(ErrorCode.COMMUNITY_NOT_FOUND));
 
-        return communities.stream().map(community -> {
-            long likeCount = communityLikeRepository.countByCommunity(community);
-            long commentCount = communityCommentRepository.countByCommunity(community);
+        boolean isLikedByUser = communityLikeRepository.findByUserAndCommunity(
+                userRepository.findById(userId).orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND)),
+                community
+        ).isPresent();
 
-            List<TagResponseDto> tags = community.getTags().stream()
-                    .map(tag -> new TagResponseDto(tag.getTagId(), tag.getName()))
-                    .collect(Collectors.toList());
+        boolean isScraped = communityScrapRepository.existsByCommunity_CommunityIdAndUser_UserId(communityId, userId);
 
-            boolean isLikedByUser = communityLikeRepository.findByUserAndCommunity(
-                    userRepository.findById(userId).orElse(null),
-                    community
-            ).isPresent();
+        CommunityResponseDto communityDto = new CommunityResponseDto(
+                community.getCommunityId(),
+                community.getContent(),
+                community.getType(),
+                community.getUser().getNickname(),
+                community.getUser().getProfilePictureUrl(),
+                isScraped // 스크랩 여부 추가
+        );
 
-            return new CommunityListResponseDto(
-                    community.getCommunityId(),
-                    community.getContent(),
-                    community.getType(),
-                    community.getUser().getNickname(),
-                    community.getUser().getProfilePictureUrl(),
-                    community.getUser().getUserId().equals(userId),
-                    isLikedByUser,
-                    community.getCreatedAt(),
-                    community.getUpdatedAt(),
-                    community.getImageMappings().stream()
-                            .map(mapping -> mapping.getCommunityImage().getImageUrl())
-                            .collect(Collectors.toList()),
-                    likeCount,
-                    commentCount,
-                    tags
-            );
-        }).collect(Collectors.toList());
+        List<CommunityImageResponseDto> images = community.getImageMappings()
+                .stream()
+                .map(mapping -> new CommunityImageResponseDto(
+                        mapping.getCommunityImage().getImageId(),
+                        mapping.getCommunityImage().getImageUrl()))
+                .collect(Collectors.toList());
+
+        List<CommunityCommentResponseDto> comments = communityCommentRepository.findByCommunity(community)
+                .stream()
+                .map(comment -> new CommunityCommentResponseDto(
+                        comment.getCommentId(),
+                        comment.getContent(),
+                        comment.getUser().getNickname(),
+                        comment.getUser().getProfilePictureUrl(),
+                        comment.getUser().getUserId().equals(userId)))
+                .collect(Collectors.toList());
+
+        long likeCount = communityLikeRepository.countByCommunity(community);
+
+        List<TagResponseDto> tags = community.getTags().stream()
+                .map(tag -> new TagResponseDto(tag.getTagId(), tag.getName()))
+                .collect(Collectors.toList());
+
+        boolean isOwner = community.getUser().getUserId().equals(userId);
+
+        return new CommunityFullResponseDto(
+                communityDto,
+                images,
+                comments,
+                likeCount,
+                isLikedByUser, // 중복 선언 제거 후 사용
+                isOwner,
+                tags
+        );
     }
 
+    @Transactional
+    public void toggleLike(Long communityId, Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+        Community community = communityRepository.findById(communityId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Community not found"));
+
+        communityLikeRepository.findByUserAndCommunity(user, community).ifPresentOrElse(
+                communityLikeRepository::delete,
+                () -> communityLikeRepository.save(new CommunityLike(user, community))
+        );
+    }
 
 
 }
