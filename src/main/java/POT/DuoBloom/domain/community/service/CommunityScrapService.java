@@ -49,6 +49,9 @@ public class CommunityScrapService {
     }
 
     public List<CommunityListResponseDto> getScrappedCommunities(Long userId) {
+        User currentUser = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
         return scrapRepository.findByUser_UserId(userId).stream()
                 .map(scrap -> {
                     Community community = scrap.getCommunity();
@@ -60,12 +63,8 @@ public class CommunityScrapService {
                     long commentCount = communityCommentRepository.countByCommunity(community);
 
                     // 유저가 해당 커뮤니티를 좋아요 했는지 확인
-                    boolean likedByUser = communityLikeRepository.findByUserAndCommunity(
-                            userRepository.findById(userId).orElseThrow(() ->
-                                    new CustomException(ErrorCode.USER_NOT_FOUND)
-                            ),
-                            community
-                    ).isPresent();
+                    boolean likedByUser = communityLikeRepository.findByUserAndCommunity(currentUser, community)
+                            .isPresent();
 
                     // 이미지 URL 리스트 생성
                     List<String> imageUrls = community.getImageMappings().stream()
@@ -77,13 +76,16 @@ public class CommunityScrapService {
                             .map(tag -> new TagResponseDto(tag.getTagId(), tag.getName()))
                             .collect(Collectors.toList());
 
+                    // 작성자인지 확인
+                    boolean isOwner = community.getUser().getUserId().equals(userId);
+
                     return new CommunityListResponseDto(
                             community.getCommunityId(),
                             community.getContent(),
                             community.getType(),
                             community.getUser().getNickname(),
                             community.getUser().getProfilePictureUrl(),
-                            true, // 스크랩한 커뮤니티이므로 isOwner는 항상 true
+                            isOwner, // 작성자인지 여부
                             likedByUser, // 유저가 좋아요를 눌렀는지 여부
                             true, // 스크랩 여부
                             community.getCreatedAt(),
@@ -95,5 +97,6 @@ public class CommunityScrapService {
                     );
                 }).collect(Collectors.toList());
     }
+
 
 }
