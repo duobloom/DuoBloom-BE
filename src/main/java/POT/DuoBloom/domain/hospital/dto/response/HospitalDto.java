@@ -26,4 +26,5 @@ public class HospitalDto {
     private Double longitude;
     private String linkUrl;
     private List<KeywordsMappingDto> keywordMappings;
+    private boolean isScraped;
 }

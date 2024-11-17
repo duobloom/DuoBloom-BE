@@ -28,4 +28,10 @@ public interface HospitalRepository extends JpaRepository<Hospital, Integer> {
             @Param("detail") Long detail,
             @Param("keyword") Keyword keyword,
             @Param("type") HospitalType type);
+
+    @Query("SELECT CASE WHEN COUNT(hs) > 0 THEN true ELSE false END " +
+            "FROM HospitalScrap hs " +
+            "WHERE hs.hospital.hospitalId = :hospitalId AND hs.user.userId = :userId")
+    boolean existsByHospitalIdAndUserId(@Param("hospitalId") Integer hospitalId, @Param("userId") Long userId);
+
 }
