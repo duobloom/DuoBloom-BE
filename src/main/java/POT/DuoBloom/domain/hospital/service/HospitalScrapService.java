@@ -17,6 +17,7 @@ import POT.DuoBloom.domain.user.entity.User;
 import POT.DuoBloom.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -32,6 +33,7 @@ public class HospitalScrapService {
     private final MiddleRepository middleRepository;
     private final DetailRepository detailRepository;
 
+    @Transactional
     public void scrapHospital(Integer hospitalId, Long userId) {
         Hospital hospital = hospitalRepository.findById(hospitalId)
                 .orElseThrow(() -> new CustomException(ErrorCode.HOSPITAL_NOT_FOUND));
@@ -43,12 +45,14 @@ public class HospitalScrapService {
         }
     }
 
+    @Transactional
     public void unscrapHospital(Integer hospitalId, Long userId) {
         HospitalScrap scrap = hospitalScrapRepository.findByHospital_HospitalIdAndUser_UserId(hospitalId, userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.SCRAP_NOT_FOUND));
         hospitalScrapRepository.delete(scrap);
     }
 
+    @Transactional
     public List<HospitalListDto> getScrappedHospitals(Long userId) {
         List<HospitalScrap> scraps = hospitalScrapRepository.findByUser_UserId(userId);
         return scraps.stream()

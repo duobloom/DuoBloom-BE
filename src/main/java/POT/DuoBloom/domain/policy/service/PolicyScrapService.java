@@ -12,6 +12,7 @@ import POT.DuoBloom.domain.user.entity.User;
 import POT.DuoBloom.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -27,6 +28,7 @@ public class PolicyScrapService {
     /**
      * 정책 스크랩 등록
      */
+    @Transactional
     public void scrapPolicy(Integer policyId, Long userId) {
         Policy policy = policyRepository.findById(policyId)
                 .orElseThrow(() -> new CustomException(ErrorCode.POLICY_NOT_FOUND));
@@ -42,6 +44,7 @@ public class PolicyScrapService {
     /**
      * 정책 스크랩 해제
      */
+    @Transactional
     public void unscrapPolicy(Integer policyId, Long userId) {
         PolicyScrap scrap = scrapRepository.findByPolicy_PolicyIdAndUser_UserId(policyId, userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.SCRAP_NOT_FOUND));
@@ -52,6 +55,7 @@ public class PolicyScrapService {
     /**
      * 스크랩된 정책 목록 조회
      */
+    @Transactional
     public List<PolicyListDto> getScrappedPolicies(Long userId) {
         return scrapRepository.findByUser_UserId(userId).stream()
                 .map(scrap -> {
