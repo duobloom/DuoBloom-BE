@@ -4,10 +4,7 @@ import POT.DuoBloom.common.exception.CustomException;
 import POT.DuoBloom.common.exception.ErrorCode;
 import POT.DuoBloom.domain.community.dto.request.CommunityRequestDto;
 import POT.DuoBloom.domain.community.dto.response.*;
-import POT.DuoBloom.domain.community.entity.Community;
-import POT.DuoBloom.domain.community.entity.CommunityLike;
-import POT.DuoBloom.domain.community.entity.Tag;
-import POT.DuoBloom.domain.community.entity.Type;
+import POT.DuoBloom.domain.community.entity.*;
 import POT.DuoBloom.domain.community.repository.*;
 import POT.DuoBloom.domain.user.entity.User;
 import POT.DuoBloom.domain.user.repository.UserRepository;
@@ -33,6 +30,7 @@ public class CommunityService {
     private final CommunityScrapRepository communityScrapRepository;
     private final UserRepository userRepository;
     private final TagRepository tagRepository;
+    private final CommunityImageRepository communityImageRepository;
 
     @Transactional
     public void createCommunity(CommunityRequestDto requestDto, Long userId) {
@@ -41,6 +39,7 @@ public class CommunityService {
 
         Community community = new Community(requestDto.getContent(), requestDto.getType(), user);
 
+        // 태그 추가
         if (requestDto.getTags() != null) {
             for (String tagName : requestDto.getTags()) {
                 Tag tag = tagRepository.findByName(tagName)
@@ -49,8 +48,20 @@ public class CommunityService {
             }
         }
 
+        // 이미지 추가
+        if (requestDto.getImageUrls() != null) {
+            for (String imageUrl : requestDto.getImageUrls()) {
+                CommunityImage communityImage = new CommunityImage(imageUrl);
+                communityImageRepository.save(communityImage); // 이미지 저장
+                CommunityImageMapping mapping = new CommunityImageMapping(community, communityImage);
+                community.getImageMappings().add(mapping);
+            }
+        }
+
         communityRepository.save(community);
     }
+
+
 
     @Transactional
     public void updateCommunity(Long communityId, CommunityRequestDto requestDto, Long userId) {

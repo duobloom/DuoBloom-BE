@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -40,7 +41,8 @@ public class Community {
     private User user;
 
     @OneToMany(mappedBy = "community", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<CommunityImageMapping> imageMappings;
+    private List<CommunityImageMapping> imageMappings = new ArrayList<>();
+
 
     public Community(String content, Type type, User user) {
         this.content = content;
