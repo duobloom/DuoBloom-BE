@@ -1,6 +1,7 @@
 package POT.DuoBloom.domain.board.controller;
 
 import POT.DuoBloom.domain.board.dto.request.BoardRequestDto;
+import POT.DuoBloom.domain.board.dto.response.BoardListDto;
 import POT.DuoBloom.domain.board.dto.response.BoardResponseDto;
 import POT.DuoBloom.domain.board.service.BoardService;
 import POT.DuoBloom.common.exception.CustomException;
@@ -26,27 +27,30 @@ public class BoardController {
 
     @Operation(summary = "전체 게시글 조회", description = "로그인한 사용자와 상대방 게시글을 조회합니다.")
     @GetMapping
-    public ResponseEntity<List<BoardResponseDto>> getAllBoards(HttpSession session) {
+    public ResponseEntity<List<BoardListDto>> getAllBoards(HttpSession session) {
         Long userId = (Long) session.getAttribute("userId");
         if (userId == null) {
             throw new CustomException(ErrorCode.UNAUTHORIZED_ACCESS);
         }
+
         User user = userService.findById(userId);
-        List<BoardResponseDto> boards = boardService.getAllBoards(user);
+        List<BoardListDto> boards = boardService.getAllBoards(user);
         return ResponseEntity.ok(boards);
     }
 
+
     @Operation(summary = "게시글 작성", description = "게시글을 작성합니다.")
     @PostMapping
-    public ResponseEntity<BoardResponseDto> createBoard(@RequestBody BoardRequestDto boardRequestDto,
-                                                        HttpSession session) {
+    public ResponseEntity<Void> createBoard(
+            @RequestBody BoardRequestDto boardRequestDto,
+            HttpSession session) {
         Long userId = (Long) session.getAttribute("userId");
         if (userId == null) {
             throw new CustomException(ErrorCode.UNAUTHORIZED_ACCESS);
         }
         User user = userService.findById(userId);
-        BoardResponseDto response = boardService.createBoard(user, boardRequestDto.getContent(), boardRequestDto.getPhotoUrls());
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        boardService.createBoard(user, boardRequestDto.getContent(), boardRequestDto.getPhotoUrls());
+        return ResponseEntity.ok().build(); // HTTP 200 응답
     }
 
     @Operation(summary = "게시글 상세 조회", description = "게시글 ID로 특정 게시글의 상세 정보를 조회합니다.")
@@ -63,16 +67,17 @@ public class BoardController {
 
     @Operation(summary = "게시글 수정", description = "게시글 ID로 특정 게시글을 수정합니다.")
     @PutMapping("/{boardId}")
-    public ResponseEntity<BoardResponseDto> updateBoard(@PathVariable Integer boardId,
-                                                        @RequestBody BoardRequestDto boardRequestDto,
-                                                        HttpSession session) {
+    public ResponseEntity<Void> updateBoard(
+            @PathVariable Integer boardId,
+            @RequestBody BoardRequestDto boardRequestDto,
+            HttpSession session) {
         Long userId = (Long) session.getAttribute("userId");
         if (userId == null) {
             throw new CustomException(ErrorCode.UNAUTHORIZED_ACCESS);
         }
         User user = userService.findById(userId);
-        BoardResponseDto updatedBoard = boardService.updateBoard(user, boardId, boardRequestDto);
-        return ResponseEntity.ok(updatedBoard);
+        boardService.updateBoard(user, boardId, boardRequestDto);
+        return ResponseEntity.ok().build(); // HTTP 200 응답
     }
 
 

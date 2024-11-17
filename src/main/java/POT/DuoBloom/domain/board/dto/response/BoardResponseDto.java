@@ -22,4 +22,5 @@ public class BoardResponseDto {
     private String authorProfilePictureUrl;
     private boolean isMine;
     private boolean likedByUser;
+    private boolean scraped;
 }

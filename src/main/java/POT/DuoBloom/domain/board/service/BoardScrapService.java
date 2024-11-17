@@ -1,18 +1,18 @@
 package POT.DuoBloom.domain.board.service;
 
+import POT.DuoBloom.common.exception.CustomException;
+import POT.DuoBloom.common.exception.ErrorCode;
 import POT.DuoBloom.domain.board.dto.response.BoardListDto;
 import POT.DuoBloom.domain.board.entity.Board;
 import POT.DuoBloom.domain.board.entity.BoardScrap;
+import POT.DuoBloom.domain.board.repository.BoardCommentRepository;
+import POT.DuoBloom.domain.board.repository.BoardLikeRepository;
 import POT.DuoBloom.domain.board.repository.BoardRepository;
 import POT.DuoBloom.domain.board.repository.BoardScrapRepository;
-import POT.DuoBloom.domain.board.repository.BoardLikeRepository;
-import POT.DuoBloom.domain.board.repository.BoardCommentRepository;
-import POT.DuoBloom.common.exception.CustomException;
-import POT.DuoBloom.common.exception.ErrorCode;
 import POT.DuoBloom.domain.user.entity.User;
+import POT.DuoBloom.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -21,52 +21,66 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class BoardScrapService {
 
-    private final BoardScrapRepository boardScrapRepository;
     private final BoardRepository boardRepository;
     private final BoardLikeRepository likeRepository;
-    private final BoardCommentRepository boardCommentRepository;
+    private final BoardCommentRepository commentRepository;
+    private final BoardScrapRepository boardScrapRepository;
+    private final UserRepository userRepository;
 
-    @Transactional
-    public void scrapBoard(User user, Integer boardId) {
+    /**
+     * 게시글 스크랩
+     */
+    public void scrapBoard(Integer boardId, Long userId) {
         Board board = boardRepository.findById(boardId)
                 .orElseThrow(() -> new CustomException(ErrorCode.BOARD_NOT_FOUND));
-        if (boardScrapRepository.findByUserAndBoard(user, board).isPresent()) {
-            throw new CustomException(ErrorCode.ALREADY_SCRAPPED);
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+        if (!boardScrapRepository.existsByBoard_BoardIdAndUser_UserId(boardId, userId)) {
+            boardScrapRepository.save(new BoardScrap(board, user));
         }
-        boardScrapRepository.save(new BoardScrap(user, board));
     }
 
-    @Transactional(readOnly = true)
-    public List<BoardListDto> getScrappedBoards(User user) {
-        return boardScrapRepository.findByUser(user).stream()
-                .map(scrap -> {
-                    Board board = scrap.getBoard();
+    /**
+     * 게시글 스크랩 취소
+     */
+    public void unscrapBoard(Integer boardId, Long userId) {
+        BoardScrap scrap = boardScrapRepository.findByBoard_BoardIdAndUser_UserId(boardId, userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.SCRAP_NOT_FOUND));
+        boardScrapRepository.delete(scrap);
+    }
 
-                    // 현재 사용자가 좋아요를 눌렀는지 확인
-                    boolean likedByUser = likeRepository.existsByUserAndBoard(user, board);
+    /**
+     * 스크랩된 게시글 목록 조회
+     */
+    public List<BoardListDto> getScrappedBoards(Long userId) {
+        List<BoardScrap> scraps = boardScrapRepository.findByUser_UserId(userId);
 
-                    return new BoardListDto(
-                            board.getBoardId(),
-                            board.getContent(),
-                            board.getUpdatedAt(),
-                            board.getPhotoUrls(),
-                            likeRepository.countByBoard(board),
-                            boardCommentRepository.countByBoard_BoardId(board.getBoardId()), // 댓글 수
-                            board.getUser().getNickname(),
-                            board.getUser().getProfilePictureUrl(),
-                            true,
-                            likedByUser
-                    );
-                })
+        return scraps.stream()
+                .map(scrap -> convertToDto(scrap.getBoard(), userId))
                 .collect(Collectors.toList());
     }
 
-    @Transactional
-    public void unsaveBoard(User user, Integer boardId) {
-        Board board = boardRepository.findById(boardId)
-                .orElseThrow(() -> new CustomException(ErrorCode.BOARD_NOT_FOUND));
-        BoardScrap scrap = boardScrapRepository.findByUserAndBoard(user, board)
-                .orElseThrow(() -> new CustomException(ErrorCode.SCRAP_NOT_FOUND));
-        boardScrapRepository.delete(scrap);
+    /**
+     * Board 엔티티를 BoardListDto로 변환
+     */
+    private BoardListDto convertToDto(Board board, Long userId) {
+        boolean likedByUser = likeRepository.existsByUser_UserIdAndBoard_BoardId(userId, board.getBoardId());
+        int likeCount = likeRepository.countByBoard(board);
+        int commentCount = commentRepository.countByBoard(board);
+
+        return new BoardListDto(
+                board.getBoardId(),
+                board.getContent(),
+                board.getUpdatedAt(),
+                board.getPhotoUrls(),
+                likeCount, // 좋아요 수
+                commentCount, // 댓글 수
+                board.getUser().getNickname(),
+                board.getUser().getProfilePictureUrl(),
+                board.getUser().getUserId().equals(userId), // isMine
+                likedByUser,
+                true // 스크랩 여부
+        );
     }
 }
