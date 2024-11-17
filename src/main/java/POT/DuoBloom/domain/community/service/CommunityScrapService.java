@@ -12,6 +12,7 @@ import POT.DuoBloom.domain.community.repository.CommunityRepository;
 import POT.DuoBloom.domain.community.repository.CommunityScrapRepository;
 import POT.DuoBloom.domain.user.entity.User;
 import POT.DuoBloom.domain.user.repository.UserRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -28,7 +29,7 @@ public class CommunityScrapService {
     private final CommunityCommentRepository communityCommentRepository;
     private final CommunityLikeRepository communityLikeRepository;
 
-
+    @Transactional
     public void scrapCommunity(Long communityId, Long userId) {
         Community community = communityRepository.findById(communityId)
                 .orElseThrow(() -> new CustomException(ErrorCode.COMMUNITY_NOT_FOUND));
@@ -41,6 +42,7 @@ public class CommunityScrapService {
         }
     }
 
+    @Transactional
     public void unscrapCommunity(Long communityId, Long userId) {
         CommunityScrap scrap = scrapRepository.findByCommunity_CommunityIdAndUser_UserId(communityId, userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.SCRAP_NOT_FOUND));
@@ -48,6 +50,7 @@ public class CommunityScrapService {
         scrapRepository.delete(scrap);
     }
 
+    @Transactional
     public List<CommunityListResponseDto> getScrappedCommunities(Long userId) {
         User currentUser = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));

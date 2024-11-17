@@ -11,6 +11,7 @@ import POT.DuoBloom.domain.board.repository.BoardRepository;
 import POT.DuoBloom.domain.board.repository.BoardScrapRepository;
 import POT.DuoBloom.domain.user.entity.User;
 import POT.DuoBloom.domain.user.repository.UserRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -30,6 +31,7 @@ public class BoardScrapService {
     /**
      * 게시글 스크랩
      */
+    @Transactional
     public void scrapBoard(Integer boardId, Long userId) {
         Board board = boardRepository.findById(boardId)
                 .orElseThrow(() -> new CustomException(ErrorCode.BOARD_NOT_FOUND));
@@ -44,6 +46,7 @@ public class BoardScrapService {
     /**
      * 게시글 스크랩 취소
      */
+    @Transactional
     public void unscrapBoard(Integer boardId, Long userId) {
         BoardScrap scrap = boardScrapRepository.findByBoard_BoardIdAndUser_UserId(boardId, userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.SCRAP_NOT_FOUND));
@@ -53,6 +56,7 @@ public class BoardScrapService {
     /**
      * 스크랩된 게시글 목록 조회
      */
+    @Transactional
     public List<BoardListDto> getScrappedBoards(Long userId) {
         List<BoardScrap> scraps = boardScrapRepository.findByUser_UserId(userId);
 

@@ -221,7 +221,6 @@ public class CommunityService {
         return result;
     }
 
-
     @Transactional(readOnly = true)
     public CommunityFullResponseDto getCommunityWithDetails(Long communityId, Long userId) {
         Community community = communityRepository.findById(communityId)
