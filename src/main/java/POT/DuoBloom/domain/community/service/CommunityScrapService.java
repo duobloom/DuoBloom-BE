@@ -1,19 +1,19 @@
 package POT.DuoBloom.domain.community.service;
 
+import POT.DuoBloom.common.exception.CustomException;
+import POT.DuoBloom.common.exception.ErrorCode;
 import POT.DuoBloom.domain.community.dto.response.CommunityListResponseDto;
 import POT.DuoBloom.domain.community.dto.response.TagResponseDto;
 import POT.DuoBloom.domain.community.entity.Community;
 import POT.DuoBloom.domain.community.entity.CommunityScrap;
-import POT.DuoBloom.domain.community.repository.CommunityLikeRepository;
-import POT.DuoBloom.domain.community.repository.CommunityScrapRepository;
-import POT.DuoBloom.domain.community.repository.CommunityRepository;
 import POT.DuoBloom.domain.community.repository.CommunityCommentRepository;
-import POT.DuoBloom.common.exception.CustomException;
-import POT.DuoBloom.common.exception.ErrorCode;
+import POT.DuoBloom.domain.community.repository.CommunityLikeRepository;
+import POT.DuoBloom.domain.community.repository.CommunityRepository;
+import POT.DuoBloom.domain.community.repository.CommunityScrapRepository;
 import POT.DuoBloom.domain.user.entity.User;
+import POT.DuoBloom.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -22,39 +22,62 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class CommunityScrapService {
 
-    private final CommunityScrapRepository communityScrapRepository;
+    private final CommunityScrapRepository scrapRepository;
     private final CommunityRepository communityRepository;
-    private final CommunityLikeRepository likeRepository;
-    private final CommunityCommentRepository commentRepository;
+    private final UserRepository userRepository;
+    private final CommunityCommentRepository communityCommentRepository;
+    private final CommunityLikeRepository communityLikeRepository;
 
-    @Transactional
-    public void scrapCommunity(User user, Long communityId) {
+
+    public void scrapCommunity(Long communityId, Long userId) {
         Community community = communityRepository.findById(communityId)
                 .orElseThrow(() -> new CustomException(ErrorCode.COMMUNITY_NOT_FOUND));
-        if (communityScrapRepository.findByUserAndCommunity(user, community).isPresent()) {
-            throw new CustomException(ErrorCode.ALREADY_SCRAPPED);
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+        if (!scrapRepository.existsByCommunity_CommunityIdAndUser_UserId(communityId, userId)) {
+            scrapRepository.save(new CommunityScrap(user, community));
         }
-        communityScrapRepository.save(new CommunityScrap(user, community));
     }
 
-    @Transactional(readOnly = true)
-    public List<CommunityListResponseDto> getScrappedCommunities(User user) {
-        return communityScrapRepository.findByUser(user).stream()
+    public void unscrapCommunity(Long communityId, Long userId) {
+        CommunityScrap scrap = scrapRepository.findByCommunity_CommunityIdAndUser_UserId(communityId, userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.SCRAP_NOT_FOUND));
+
+        scrapRepository.delete(scrap);
+    }
+
+    public List<CommunityListResponseDto> getScrappedCommunities(Long userId) {
+        User currentUser = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+        return scrapRepository.findByUser_UserId(userId).stream()
                 .map(scrap -> {
                     Community community = scrap.getCommunity();
 
-                    long likeCount = likeRepository.countByCommunity(community);
-                    boolean likedByUser = likeRepository.findByUserAndCommunity(user, community).isPresent();
+                    // 좋아요 수 계산
+                    long likeCount = communityLikeRepository.countByCommunity(community);
 
-                    long commentCount = commentRepository.countByCommunity(community);
+                    // 댓글 수 계산
+                    long commentCount = communityCommentRepository.countByCommunity(community);
 
+                    // 유저가 해당 커뮤니티를 좋아요 했는지 확인
+                    boolean likedByUser = communityLikeRepository.findByUserAndCommunity(currentUser, community)
+                            .isPresent();
+
+                    // 이미지 URL 리스트 생성
+                    List<String> imageUrls = community.getImageMappings().stream()
+                            .map(mapping -> mapping.getCommunityImage().getImageUrl())
+                            .collect(Collectors.toList());
+
+                    // 태그 리스트 생성
                     List<TagResponseDto> tags = community.getTags().stream()
                             .map(tag -> new TagResponseDto(tag.getTagId(), tag.getName()))
                             .collect(Collectors.toList());
 
-                    List<String> imageUrls = community.getImageMappings().stream()
-                            .map(mapping -> mapping.getCommunityImage().getImageUrl())
-                            .collect(Collectors.toList());
+                    // 작성자인지 확인
+                    boolean isOwner = community.getUser().getUserId().equals(userId);
 
                     return new CommunityListResponseDto(
                             community.getCommunityId(),
@@ -62,25 +85,18 @@ public class CommunityScrapService {
                             community.getType(),
                             community.getUser().getNickname(),
                             community.getUser().getProfilePictureUrl(),
-                            true, // 스크랩한 게시글은 항상 내 것
-                            likedByUser,
+                            isOwner, // 작성자인지 여부
+                            likedByUser, // 유저가 좋아요를 눌렀는지 여부
+                            true, // 스크랩 여부
                             community.getCreatedAt(),
                             community.getUpdatedAt(),
                             imageUrls,
-                            likeCount,
-                            commentCount,
-                            tags
+                            likeCount, // 좋아요 수
+                            commentCount, // 댓글 수
+                            tags // 태그 리스트
                     );
-                })
-                .collect(Collectors.toList());
+                }).collect(Collectors.toList());
     }
 
-    @Transactional
-    public void unsaveCommunity(User user, Long communityId) {
-        Community community = communityRepository.findById(communityId)
-                .orElseThrow(() -> new CustomException(ErrorCode.COMMUNITY_NOT_FOUND));
-        CommunityScrap scrap = communityScrapRepository.findByUserAndCommunity(user, community)
-                .orElseThrow(() -> new CustomException(ErrorCode.SCRAP_NOT_FOUND));
-        communityScrapRepository.delete(scrap);
-    }
+
 }

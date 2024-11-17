@@ -19,6 +19,7 @@ public class CommunityListResponseDto {
     private String profilePictureUrl;
     private boolean isOwner;
     private boolean likedByUser;
+    private boolean scraped;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private List<String> imageUrls;

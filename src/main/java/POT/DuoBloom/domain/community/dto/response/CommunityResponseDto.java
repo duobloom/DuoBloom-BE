@@ -14,4 +14,6 @@ public class CommunityResponseDto {
     private Type type;
     private String nickname;
     private String profilePictureUrl;
+    private boolean scraped;
+
 }
