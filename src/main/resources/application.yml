@@ -6,6 +6,12 @@ spring:
     url: ${DB_URL}
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      minimum-idle: 5
+      idle-timeout: 30000
+      connection-timeout: 30000
+      max-lifetime: 1800000
 
   jpa:
     hibernate:
@@ -25,6 +31,12 @@ spring:
     host: ${REDIS_HOST}
     port: 6379
     password: ${REDIS_PASSWORD}
+    lettuce:
+      pool:
+        max-active: 8
+        max-idle: 8
+        min-idle: 0
+        max-wait: 10000ms
 
   mail:
     host: smtp.gmail.com
@@ -64,3 +76,7 @@ cloud:
     credentials:
       access-key: ${S3_ACCESS_KEY}
       secret-key: ${S3_SECRET_KEY}
+
+db:
+  thread-count: 50
+  connections-per-task: 2
