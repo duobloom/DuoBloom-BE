@@ -15,19 +15,21 @@ public interface HospitalRepository extends JpaRepository<Hospital, Integer> {
 
     List<Hospital> findByHospitalNameContaining(String name);
 
-    @Query("SELECT h FROM Hospital h " +
-            "LEFT JOIN h.keywordMappings km " +
+    @Query("SELECT DISTINCT h FROM Hospital h " +
+            "LEFT JOIN FETCH h.keywordMappings km " +
+            "LEFT JOIN FETCH km.keyword k " +
             "WHERE (:region IS NULL OR h.region = :region) " +
             "AND (:middle IS NULL OR h.middle = :middle) " +
             "AND (:detail IS NULL OR h.detail = :detail) " +
             "AND (:type IS NULL OR h.type = :type) " +
-            "AND (:keyword IS NULL OR km.keyword.keyword = :keyword)")
+            "AND (:keyword IS NULL OR k.keyword = :keyword)")
     List<Hospital> findHospitalsByFilters(
             @Param("region") Long region,
             @Param("middle") Long middle,
             @Param("detail") Long detail,
             @Param("keyword") Keyword keyword,
             @Param("type") HospitalType type);
+
 
     @Query("SELECT CASE WHEN COUNT(hs) > 0 THEN true ELSE false END " +
             "FROM HospitalScrap hs " +
