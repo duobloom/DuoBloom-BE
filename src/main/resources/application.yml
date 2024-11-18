@@ -49,7 +49,7 @@ server:
     session:
       cookie:
         name: JSESSIONID
-        secure: true
+        secure: true
         http-only: true
       timeout: 60m
 
