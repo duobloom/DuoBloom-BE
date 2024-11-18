@@ -65,7 +65,8 @@ public class HospitalService {
 
     // 병원 필터링
     public List<HospitalListDto> findHospitalsByFilters(Long region, Long middle, Long detail, Keyword keyword, HospitalType type) {
-        List<Hospital> hospitals = hospitalRepository.findHospitalsByFilters(region, middle, detail, keyword, type);
+        List<Hospital> hospitals = hospitalRepository.findHospitalsByFiltersWithEntityGraph(region, middle, detail, keyword, type);
+
         if (hospitals.isEmpty()) {
             throw new CustomException(ErrorCode.HOSPITAL_NOT_FOUND);
         }
@@ -84,6 +85,7 @@ public class HospitalService {
                 })
                 .collect(Collectors.toList());
     }
+
 
 
     // 단일 병원 조회
