@@ -49,7 +49,7 @@ public class Hospital {
     private String imageUrl;
 
     @JsonManagedReference
-    @OneToMany(mappedBy = "hospital", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "hospital", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<HospitalKeywordsMapping> keywordMappings;
 
     @PrePersist
