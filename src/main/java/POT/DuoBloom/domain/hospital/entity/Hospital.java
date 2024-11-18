@@ -12,6 +12,14 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
+@NamedEntityGraph(
+        name = "Hospital.withKeywordMappings",
+        attributeNodes = @NamedAttributeNode(value = "keywordMappings", subgraph = "keywordMappingsSubgraph"),
+        subgraphs = @NamedSubgraph(
+                name = "keywordMappingsSubgraph",
+                attributeNodes = @NamedAttributeNode("keyword")
+        )
+)
 public class Hospital {
 
     @Id
