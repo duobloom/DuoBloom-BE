@@ -12,9 +12,9 @@ import java.util.List;
 @Repository
 public interface PolicyRepository extends JpaRepository<Policy, Integer> {
 
-    @Query("SELECT p FROM Policy p " +
-            "JOIN p.policyMappings pm " +
-            "JOIN pm.keyword k " +
+    @Query("SELECT DISTINCT p FROM Policy p " +
+            "LEFT JOIN FETCH p.policyMappings pm " +
+            "LEFT JOIN FETCH pm.keyword k " +
             "WHERE (:region IS NULL OR p.region = :region) " +
             "AND (:middle IS NULL OR p.middle = :middle) " +
             "AND (:detail IS NULL OR p.detail = :detail) " +
@@ -25,6 +25,6 @@ public interface PolicyRepository extends JpaRepository<Policy, Integer> {
             @Param("detail") Long detail,
             @Param("keyword") Keyword keyword
     );
-
 }
+
 

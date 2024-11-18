@@ -50,7 +50,7 @@ public class Policy {
     private String imageUrl;
 
     @JsonManagedReference
-    @OneToMany(mappedBy = "policy", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "policy", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<PolicyKeywordsMapping> policyMappings;
 }
 
