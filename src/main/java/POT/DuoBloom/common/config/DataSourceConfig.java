@@ -37,14 +37,17 @@ public class DataSourceConfig {
         dataSource.setDriverClassName(driverClassName);
 
         // HikariCP Pool Size 계산
-        int poolSize = threadCount * (connectionsPerTask - 1) + 1;
+        int poolSize = threadCount * (connectionsPerTask - 1) + (threadCount / 2);
         if (poolSize <= 0) {
             poolSize = 10; // 기본값 최소 10
         }
         dataSource.setMaximumPoolSize(poolSize);
 
+        // 로그 출력으로 확인
+        System.out.println("HikariCP Maximum Pool Size: " + poolSize);
+
         // HikariCP 추가 설정
-        dataSource.setMinimumIdle(5); // 최소 유휴 커넥션
+        dataSource.setMinimumIdle(poolSize / 2); // 최소 유휴 커넥션 (50% 여유)
         dataSource.setIdleTimeout(30000); // 유휴 커넥션 최대 대기 시간
         dataSource.setConnectionTimeout(30000); // 커넥션 획득 대기 시간
         dataSource.setMaxLifetime(1800000); // 커넥션 최대 수명
