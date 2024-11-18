@@ -78,5 +78,5 @@ cloud:
       secret-key: ${S3_SECRET_KEY}
 
 db:
-  thread-count: 50
+  thread-count: 16
   connections-per-task: 2
