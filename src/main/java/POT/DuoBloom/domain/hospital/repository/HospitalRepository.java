@@ -3,7 +3,6 @@ package POT.DuoBloom.domain.hospital.repository;
 import POT.DuoBloom.domain.hospital.entity.Hospital;
 import POT.DuoBloom.domain.hospital.entity.HospitalType;
 import POT.DuoBloom.domain.hospital.entity.Keyword;
-import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -36,23 +35,5 @@ public interface HospitalRepository extends JpaRepository<Hospital, Integer> {
             "FROM HospitalScrap hs " +
             "WHERE hs.hospital.hospitalId = :hospitalId AND hs.user.userId = :userId")
     boolean existsByHospitalIdAndUserId(@Param("hospitalId") Integer hospitalId, @Param("userId") Long userId);
-
-    @EntityGraph(value = "Hospital.withKeywordMappings", type = EntityGraph.EntityGraphType.LOAD)
-    @Query("SELECT h FROM Hospital h " +
-            "LEFT JOIN h.keywordMappings km " +
-            "LEFT JOIN km.keyword k " +
-            "WHERE (:region IS NULL OR h.region = :region) " +
-            "AND (:middle IS NULL OR h.middle = :middle) " +
-            "AND (:detail IS NULL OR h.detail = :detail) " +
-            "AND (:type IS NULL OR h.type = :type) " +
-            "AND (:keyword IS NULL OR k.keyword = :keyword)")
-    List<Hospital> findHospitalsByFiltersWithEntityGraph(
-            @Param("region") Long region,
-            @Param("middle") Long middle,
-            @Param("detail") Long detail,
-            @Param("keyword") Keyword keyword,
-            @Param("type") HospitalType type);
-
-
 
 }
