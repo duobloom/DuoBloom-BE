@@ -6,6 +6,7 @@ import lombok.Data;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 @Data
 @AllArgsConstructor
@@ -19,7 +20,8 @@ public class PolicyDto {
     private Sex sex;
     private LocalDate startDate;
     private LocalDate endDate;
-    private String target;
+    private Map<String, Object> target;
+    private Map<String, Object> benefit;
     private String linkUrl;
     private String imageUrl;
     private List<KeywordsMappingDto> keywordMappings;
