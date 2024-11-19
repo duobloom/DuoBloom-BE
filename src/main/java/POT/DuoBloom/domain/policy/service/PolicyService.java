@@ -47,7 +47,8 @@ public class PolicyService {
                 singlePolicy.getSex(),
                 singlePolicy.getStartDate(),
                 singlePolicy.getEndDate(),
-                singlePolicy.getTarget(),
+                singlePolicy.getTargetAsMap(),
+                singlePolicy.getBenefitAsMap(),
                 singlePolicy.getLinkUrl(),
                 singlePolicy.getImageUrl(),
                 singlePolicy.getPolicyMappings().stream()
