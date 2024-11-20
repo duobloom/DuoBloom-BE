@@ -23,6 +23,7 @@ public enum ErrorCode {
 
 
     // user
+    UNAUTHORIZED(403, "인증되지 않은 사용자입니다."),
     USER_NOT_FOUND(404, "사용자를 찾을 수 없습니다."),
     SESSION_USER_NOT_FOUND(401, "세션에 userId가 없습니다."),
     COUPLE_ONLY_ACCESS(403, "커플인 경우에만 접근할 수 있습니다."),

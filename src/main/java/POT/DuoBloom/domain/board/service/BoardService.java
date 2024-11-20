@@ -150,13 +150,13 @@ public class BoardService {
                 board.getUpdatedAt(),
                 board.getPhotoUrls(),
                 null, // 댓글 정보는 여기서 처리하지 않음
-                likeRepository.countByBoard(board), // 좋아요 수
-                commentRepository.countByBoard_BoardId(board.getBoardId()), // 댓글 수
+                likeRepository.countByBoard(board),
+                commentRepository.countByBoard_BoardId(board.getBoardId()),
                 board.getUser().getNickname(),
                 board.getUser().getProfilePictureUrl(),
-                board.getUser().getUserId().equals(userId), // isMine
+                board.getUser().getUserId().equals(userId),
                 likedByUser,
-                scraped // 스크랩 여부
+                scraped
         );
     }
 

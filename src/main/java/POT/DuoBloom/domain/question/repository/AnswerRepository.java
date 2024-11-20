@@ -1,23 +1,28 @@
 package POT.DuoBloom.domain.question.repository;
 
 import POT.DuoBloom.domain.question.entity.Answer;
+import io.lettuce.core.dynamic.annotation.Param;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.Optional;
 
 @Repository
 public interface AnswerRepository extends JpaRepository<Answer, Long> {
 
-    // 특정 답변 ID와 사용자 ID로 답변 조회
-    Optional<Answer> findByAnswerIdAndUser_UserId(Long answerId, Long userId);
-
     // 특정 질문 ID와 사용자 ID로 답변 조회
-    List<Answer> findByQuestion_QuestionIdAndUser_UserId(Long questionId, Long userId);
+    //List<Answer> findByQuestion_QuestionIdAndUser_UserId(Long questionId, Long userId);
 
-    // 특정 질문 ID로 모든 답변 조회 (질문에 달린 모든 답변 목록)
-    List<Answer> findByQuestion_QuestionId(Long questionId);
+    @Query("SELECT a FROM Answer a " +
+            "JOIN FETCH a.question q " +
+            "JOIN FETCH a.user u " +
+            "WHERE q.questionId = :questionId AND u.userId = :userId")
+    List<Answer> findByQuestion_QuestionIdAndUser_UserId(
+            @Param("questionId") Long questionId,
+            @Param("userId") Long userId
+    );
+
 
 
 }
