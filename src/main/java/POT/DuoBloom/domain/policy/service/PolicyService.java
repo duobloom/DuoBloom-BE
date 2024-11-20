@@ -11,6 +11,8 @@ import POT.DuoBloom.domain.policy.entity.Keyword;
 import POT.DuoBloom.domain.policy.entity.Policy;
 import POT.DuoBloom.domain.policy.repository.PolicyScrapRepository;
 import POT.DuoBloom.domain.region.service.RegionConversionService;
+import java.util.Map;
+
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -47,17 +49,18 @@ public class PolicyService {
                 singlePolicy.getSex(),
                 singlePolicy.getStartDate(),
                 singlePolicy.getEndDate(),
-                singlePolicy.getTargetAsMap(),
-                singlePolicy.getBenefitAsMap(),
+                singlePolicy.getTargetAsMap() != null ? singlePolicy.getTargetAsMap() : Map.of(),
+                singlePolicy.getBenefitAsMap() != null ? singlePolicy.getBenefitAsMap() : Map.of(),
                 singlePolicy.getLinkUrl(),
                 singlePolicy.getImageUrl(),
                 singlePolicy.getPolicyMappings().stream()
                         .map(mapping -> new KeywordsMappingDto(
                                 mapping.getKeyword() != null ? mapping.getKeyword().getKeyword().name() : null))
                         .collect(Collectors.toList()),
-                isScraped // 스크랩 여부 추가
+                isScraped
         );
     }
+
 
 
     // 정책 목록 조회

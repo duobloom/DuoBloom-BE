@@ -64,6 +64,9 @@ public class Policy {
     private List<PolicyKeywordsMapping> policyMappings;
 
     public Map<String, Object> getBenefitAsMap() {
+        if (benefit == null || benefit.isEmpty()) {
+            return Map.of();
+        }
         ObjectMapper objectMapper = new ObjectMapper();
         try {
             return objectMapper.readValue(benefit, new TypeReference<Map<String, Object>>() {});
@@ -73,12 +76,16 @@ public class Policy {
     }
 
     public Map<String, Object> getTargetAsMap() {
+        if (target == null || target.isEmpty()) {
+            return Map.of();
+        }
         ObjectMapper objectMapper = new ObjectMapper();
         try {
             return objectMapper.readValue(target, new TypeReference<Map<String, Object>>() {});
         } catch (IOException e) {
-            throw new RuntimeException("Failed to parse benefit JSON", e);
+            throw new RuntimeException("Failed to parse target JSON", e);
         }
     }
+
 }
 
