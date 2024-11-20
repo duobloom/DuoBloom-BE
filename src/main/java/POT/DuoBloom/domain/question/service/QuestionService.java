@@ -81,12 +81,7 @@ public class QuestionService {
         Answer answer = new Answer(user, question, answerDto.getContent());
         answerRepository.save(answer);
 
-        increasePoints(user, 5);
-    }
-
-    @Async
-    public void increasePoints(User user, int points) {
-        log.info("User {} has earned {} points", user.getUserId(), points);
+        user.updateBalance(5);
     }
 
     @Transactional
