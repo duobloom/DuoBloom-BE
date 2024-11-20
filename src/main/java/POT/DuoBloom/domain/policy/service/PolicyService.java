@@ -5,14 +5,11 @@ import POT.DuoBloom.common.exception.ErrorCode;
 import POT.DuoBloom.domain.policy.dto.response.KeywordsMappingDto;
 import POT.DuoBloom.domain.policy.dto.response.PolicyDto;
 import POT.DuoBloom.domain.policy.dto.response.PolicyListDto;
-import POT.DuoBloom.domain.policy.entity.PolicyKeywordsMapping;
-import POT.DuoBloom.domain.policy.repository.PolicyRepository;
 import POT.DuoBloom.domain.policy.entity.Keyword;
 import POT.DuoBloom.domain.policy.entity.Policy;
+import POT.DuoBloom.domain.policy.repository.PolicyRepository;
 import POT.DuoBloom.domain.policy.repository.PolicyScrapRepository;
 import POT.DuoBloom.domain.region.service.RegionConversionService;
-import java.util.Map;
-
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -49,8 +46,8 @@ public class PolicyService {
                 singlePolicy.getSex(),
                 singlePolicy.getStartDate(),
                 singlePolicy.getEndDate(),
-                singlePolicy.getTargetAsMap() != null ? singlePolicy.getTargetAsMap() : Map.of(),
-                singlePolicy.getBenefitAsMap() != null ? singlePolicy.getBenefitAsMap() : Map.of(),
+                PolicyDto.convertJsonToMap(singlePolicy.getTarget()),
+                PolicyDto.convertJsonToMap(singlePolicy.getBenefit()),
                 singlePolicy.getLinkUrl(),
                 singlePolicy.getImageUrl(),
                 singlePolicy.getPolicyMappings().stream()
@@ -60,8 +57,6 @@ public class PolicyService {
                 isScraped
         );
     }
-
-
 
     // 정책 목록 조회
     public List<PolicyListDto> getPolicies(Long region, Long middle, Long detail, Keyword keyword, Long userId) {
@@ -86,9 +81,8 @@ public class PolicyService {
                                 .map(mapping -> new KeywordsMappingDto(
                                         mapping.getKeyword() != null ? mapping.getKeyword().getKeyword().name() : null))
                                 .collect(Collectors.toList()),
-                        scrapRepository.existsByPolicy_PolicyIdAndUser_UserId(policy.getPolicyId(), userId) // 스크랩 여부
+                        scrapRepository.existsByPolicy_PolicyIdAndUser_UserId(policy.getPolicyId(), userId)
                 ))
                 .collect(Collectors.toList());
     }
-
 }
