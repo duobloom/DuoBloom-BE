@@ -3,6 +3,7 @@ package POT.DuoBloom.domain.board.controller;
 import POT.DuoBloom.domain.board.dto.request.BoardCommentRequestDto;
 import POT.DuoBloom.domain.board.dto.response.BoardCommentDto;
 import POT.DuoBloom.domain.board.entity.BoardComment;
+import POT.DuoBloom.domain.board.service.BoardCommentService;
 import POT.DuoBloom.domain.board.service.BoardService;
 import POT.DuoBloom.common.exception.CustomException;
 import POT.DuoBloom.common.exception.ErrorCode;
@@ -26,6 +27,7 @@ public class BoardCommentController {
 
     private final BoardService boardService;
     private final UserService userService;
+    private final BoardCommentService boardCommentService;
 
     @Operation(summary = "댓글 추가", description = "지정된 게시물에 댓글을 추가합니다.")
     @PostMapping("/{boardId}/comments")
@@ -38,7 +40,7 @@ public class BoardCommentController {
         }
 
         User user = userService.findById(userId);
-        BoardComment boardComment = boardService.addComment(user, boardId, requestDto.getContent());
+        BoardComment boardComment = boardCommentService.addComment(user, boardId, requestDto.getContent());
 
         BoardCommentDto responseDto = new BoardCommentDto(
                 boardComment.getId(),
@@ -68,7 +70,7 @@ public class BoardCommentController {
         }
 
         User user = userService.findById(userId);
-        BoardComment updatedComment = boardService.updateComment(commentId, user, requestDto.getContent());
+        BoardComment updatedComment = boardCommentService.updateComment(commentId, user, requestDto.getContent());
 
         BoardCommentDto responseDto = new BoardCommentDto(
                 updatedComment.getId(),
@@ -90,7 +92,7 @@ public class BoardCommentController {
         if (userId == null) {
             throw new CustomException(ErrorCode.UNAUTHORIZED_ACCESS);
         }
-        boardService.deleteComment(commentId);
+        boardCommentService.deleteComment(commentId);
         return ResponseEntity.noContent().build();
     }
 }
