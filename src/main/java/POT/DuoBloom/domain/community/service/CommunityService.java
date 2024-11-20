@@ -267,7 +267,10 @@ public class CommunityService {
                         comment.getContent(),
                         comment.getUser().getNickname(),
                         comment.getUser().getProfilePictureUrl(),
-                        comment.getUser().getUserId().equals(userId)))
+                        comment.getUser().getUserId().equals(userId),
+                        comment.getCreatedAt(),
+                        comment.getUpdatedAt()
+                ))
                 .collect(Collectors.toList());
 
         long likeCount = communityLikeRepository.countByCommunity(community);
@@ -283,7 +286,7 @@ public class CommunityService {
                 images,
                 comments,
                 likeCount,
-                isLikedByUser, // 중복 선언 제거 후 사용
+                isLikedByUser,
                 isOwner,
                 tags
         );

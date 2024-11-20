@@ -40,7 +40,9 @@ public class CommunityCommentService {
                 savedComment.getContent(),
                 user.getNickname(),
                 user.getProfilePictureUrl(),
-                true
+                true,
+                savedComment.getCreatedAt(),
+                savedComment.getUpdatedAt()
         );
     }
 
@@ -69,8 +71,11 @@ public class CommunityCommentService {
                         comment.getContent(),
                         comment.getUser().getNickname(),
                         comment.getUser().getProfilePictureUrl(),
-                        user != null && comment.getUser().getUserId().equals(userId)
+                        user != null && comment.getUser().getUserId().equals(userId),
+                        comment.getCreatedAt(),
+                        comment.getUpdatedAt()
                 ))
                 .collect(Collectors.toList());
     }
+
 }
