@@ -13,6 +13,9 @@ import POT.DuoBloom.domain.user.entity.User;
 import POT.DuoBloom.domain.user.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -27,6 +30,23 @@ public class BoardScrapService {
     private final BoardCommentRepository commentRepository;
     private final BoardScrapRepository boardScrapRepository;
     private final UserRepository userRepository;
+
+    /**
+     * 현재 로그인한 사용자 ID 가져오기
+     */
+    private Long getCurrentUserId() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new CustomException(ErrorCode.UNAUTHORIZED);
+        }
+
+        Object principal = authentication.getPrincipal();
+        if (principal instanceof UserDetails) {
+            return Long.valueOf(((UserDetails) principal).getUsername()); // username에 userId가 저장된 경우
+        }
+
+        throw new CustomException(ErrorCode.UNAUTHORIZED);
+    }
 
     /**
      * 게시글 스크랩
@@ -88,3 +108,4 @@ public class BoardScrapService {
         );
     }
 }
+
