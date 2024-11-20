@@ -39,6 +39,27 @@ public class BoardService {
         return user.getCoupleUser() != null;
     }
 
+    @Transactional(readOnly = true)
+    public List<BoardResponseDto> getBoardsByDateAndUser(LocalDate date, User targetUser, Long currentUserId) {
+        // 특정 날짜와 사용자의 게시글 조회
+        List<Board> boards = boardRepository.findByUserAndFeedDate(targetUser, date);
+
+        return boards.stream()
+                .map(board -> {
+                    // 현재 사용자가 해당 게시글을 좋아요 눌렀는지 확인
+                    boolean likedByUser = likeRepository.existsByUser_UserIdAndBoard_BoardId(currentUserId, board.getBoardId());
+
+                    // 현재 사용자가 해당 게시글을 스크랩했는지 확인
+                    boolean scraped = scrapRepository.existsByBoard_BoardIdAndUser_UserId(board.getBoardId(), currentUserId);
+
+                    // ResponseDto로 변환
+                    return convertToResponseDto(board, currentUserId, likedByUser, scraped);
+                })
+                .collect(Collectors.toList());
+    }
+
+
+    // 게시글 생성
     @Transactional
     public void createBoard(User user, String content, List<String> photoUrls) {
         if (!canAccessBoard(user)) {
@@ -46,30 +67,30 @@ public class BoardService {
         }
 
         Board board = new Board(user, content, LocalDateTime.now());
-
         if (photoUrls != null) {
             photoUrls.forEach(board::addPhotoUrl);
         }
-
         boardRepository.save(board);
-
     }
 
-
-
+    // 전체 게시글 조회
     @Transactional(readOnly = true)
     public List<BoardListDto> getAllBoards(User currentUser) {
         Long currentUserId = currentUser.getUserId();
 
         return boardRepository.findAll().stream()
                 .map(board -> {
-                    boolean likedByUser = likeRepository.existsByUserAndBoard(currentUser, board);
+                    log.debug("Checking if user [{}] liked board [{}]", currentUserId, board.getBoardId());
+                    boolean likedByUser = likeRepository.existsByUser_UserIdAndBoard_BoardId(currentUserId, board.getBoardId());
+                    log.debug("Liked by user result: {}", likedByUser);
+
                     boolean scraped = scrapRepository.existsByBoard_BoardIdAndUser_UserId(board.getBoardId(), currentUserId);
                     return convertToListDto(board, currentUserId, likedByUser, scraped);
                 })
                 .collect(Collectors.toList());
     }
 
+    // 게시글 상세 조회
     @Transactional(readOnly = true)
     public BoardResponseDto getBoardDetailsById(Integer boardId, User currentUser) {
         Board board = boardRepository.findById(boardId)
@@ -80,31 +101,13 @@ public class BoardService {
                 .map(comment -> convertToCommentDto(comment, currentUser.getUserId()))
                 .collect(Collectors.toList());
 
-        boolean likedByUser = likeRepository.existsByUserAndBoard(currentUser, board);
+        boolean likedByUser = likeRepository.existsByUser_UserIdAndBoard_BoardId(currentUser.getUserId(), boardId);
         boolean isMine = board.getUser().getUserId().equals(currentUser.getUserId());
 
         return convertToResponseDtoWithComments(board, currentUser.getUserId(), likedByUser, isMine, commentDtos);
     }
 
-    @Transactional(readOnly = true)
-    public List<BoardResponseDto> getBoardsByDateAndUser(LocalDate date, User targetUser, Long currentUserId) {
-        List<Board> boards = boardRepository.findByUserAndFeedDate(targetUser, date);
-
-        return boards.stream()
-                .map(board -> {
-                    // 현재 사용자가 게시글을 좋아요 눌렀는지 확인
-                    boolean likedByUser = likeRepository.existsByUserAndBoard(targetUser, board);
-
-                    // 현재 사용자가 게시글을 스크랩했는지 확인
-                    boolean scraped = scrapRepository.existsByBoard_BoardIdAndUser_UserId(board.getBoardId(), currentUserId);
-
-                    // ResponseDto 변환
-                    return convertToResponseDto(board, currentUserId, likedByUser, scraped);
-                })
-                .collect(Collectors.toList());
-    }
-
-
+    // 게시글 수정
     @Transactional
     public void updateBoard(User user, Integer boardId, BoardRequestDto boardRequestDto) {
         if (!canAccessBoard(user)) {
@@ -126,7 +129,7 @@ public class BoardService {
         boardRepository.save(board); // 변경 내용을 저장
     }
 
-
+    // 게시글 삭제
     @Transactional
     public void deleteBoard(User user, Integer boardId) {
         if (!canAccessBoard(user)) {
@@ -143,13 +146,38 @@ public class BoardService {
         boardRepository.delete(board);
     }
 
+    // 좋아요 추가
+    @Transactional
+    public void likeBoard(User user, Integer boardId) {
+        if (likeRepository.existsByUser_UserIdAndBoard_BoardId(user.getUserId(), boardId)) {
+            throw new CustomException(ErrorCode.ALREADY_LIKED);
+        }
+
+        Board board = boardRepository.findById(boardId)
+                .orElseThrow(() -> new CustomException(ErrorCode.BOARD_NOT_FOUND));
+        likeRepository.save(new BoardLike(user, board));
+    }
+
+    // 좋아요 취소
+    @Transactional
+    public void unlikeBoard(User user, Integer boardId) {
+        if (!likeRepository.existsByUser_UserIdAndBoard_BoardId(user.getUserId(), boardId)) {
+            throw new CustomException(ErrorCode.NOT_LIKED);
+        }
+
+        Board board = boardRepository.findById(boardId)
+                .orElseThrow(() -> new CustomException(ErrorCode.BOARD_NOT_FOUND));
+        likeRepository.deleteByUserAndBoard(user, board);
+    }
+
+    // DTO 변환 메서드
     private BoardResponseDto convertToResponseDto(Board board, Long userId, boolean likedByUser, boolean scraped) {
         return new BoardResponseDto(
                 board.getBoardId(),
                 board.getContent(),
                 board.getUpdatedAt(),
                 board.getPhotoUrls(),
-                null, // 댓글 정보는 여기서 처리하지 않음
+                null, // 댓글 정보는 다른 메서드에서 처리
                 likeRepository.countByBoard(board),
                 commentRepository.countByBoard_BoardId(board.getBoardId()),
                 board.getUser().getNickname(),
@@ -160,6 +188,22 @@ public class BoardService {
         );
     }
 
+
+    private BoardListDto convertToListDto(Board board, Long userId, boolean likedByUser, boolean scraped) {
+        return new BoardListDto(
+                board.getBoardId(),
+                board.getContent(),
+                board.getUpdatedAt(),
+                board.getPhotoUrls(),
+                likeRepository.countByBoard(board),
+                commentRepository.countByBoard_BoardId(board.getBoardId()),
+                board.getUser().getNickname(),
+                board.getUser().getProfilePictureUrl(),
+                board.getUser().getUserId().equals(userId),
+                likedByUser,
+                scraped
+        );
+    }
 
     private BoardResponseDto convertToResponseDtoWithComments(Board board, Long userId, boolean likedByUser, boolean isMine, List<BoardCommentDto> comments) {
         boolean scraped = scrapRepository.existsByBoard_BoardIdAndUser_UserId(board.getBoardId(), userId);
@@ -191,84 +235,7 @@ public class BoardService {
         );
     }
 
-    private BoardListDto convertToListDto(Board board, Long userId, boolean likedByUser, boolean scraped) {
-        return new BoardListDto(
-                board.getBoardId(),
-                board.getContent(),
-                board.getUpdatedAt(),
-                board.getPhotoUrls(),
-                likeRepository.countByBoard(board),
-                commentRepository.countByBoard_BoardId(board.getBoardId()),
-                board.getUser().getNickname(),
-                board.getUser().getProfilePictureUrl(),
-                board.getUser().getUserId().equals(userId),
-                likedByUser,
-                scraped
-        );
-    }
 
-
-    // 특정 사용자가 특정 게시물에 좋아요를 눌렀는지 확인
-    @Transactional(readOnly = true)
-    public boolean isBoardLikedByUser(User user, Integer boardId) {
-        Board board = boardRepository.findById(boardId)
-                .orElseThrow(() -> new CustomException(ErrorCode.BOARD_NOT_FOUND));
-        return likeRepository.existsByUserAndBoard(user, board);
-    }
-
-
-    // 좋아요 추가
-    @Transactional
-    public void likeBoard(User user, Integer boardId) {
-        if (isBoardLikedByUser(user, boardId)) {
-            throw new CustomException(ErrorCode.ALREADY_LIKED);
-        }
-
-        Board board = boardRepository.findById(boardId)
-                .orElseThrow(() -> new CustomException(ErrorCode.BOARD_NOT_FOUND));
-        likeRepository.save(new BoardLike(user, board));
-    }
-
-    // 좋아요 취소
-    @Transactional
-    public void unlikeBoard(User user, Integer boardId) {
-        if (!isBoardLikedByUser(user, boardId)) {
-            throw new CustomException(ErrorCode.NOT_LIKED);
-        }
-
-        Board board = boardRepository.findById(boardId)
-                .orElseThrow(() -> new CustomException(ErrorCode.BOARD_NOT_FOUND));
-        likeRepository.deleteByUserAndBoard(user, board);
-    }
-
-    // 댓글 추가
-    @Transactional
-    public BoardComment addComment(User user, Integer boardId, String content) {
-        Board board = boardRepository.findById(boardId)
-                .orElseThrow(() -> new CustomException(ErrorCode.BOARD_NOT_FOUND));
-        BoardComment boardComment = new BoardComment(user, board, content);
-        return commentRepository.save(boardComment);
-    }
-
-    @Transactional
-    public BoardComment updateComment(Long commentId, User user, String newContent) {
-        BoardComment boardComment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new CustomException(ErrorCode.COMMENT_NOT_FOUND));
-
-        if (!boardComment.getUser().equals(user)) {
-            throw new CustomException(ErrorCode.FORBIDDEN_ACCESS);
-        }
-
-        boardComment.updateContent(newContent);
-        return commentRepository.save(boardComment);
-    }
-
-
-    // 댓글 삭제
-    @Transactional
-    public void deleteComment(Long commentId) {
-        BoardComment boardComment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new CustomException(ErrorCode.COMMENT_NOT_FOUND));
-        commentRepository.delete(boardComment);
-    }
 }
+
+
